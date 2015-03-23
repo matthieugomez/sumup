@@ -7,46 +7,45 @@ program stat, rclass
     if "`stats'" ~= ""{
         local statistics `stats'
     }
-    if "`by'" == "" & "`statistics'" == ""{
-        sum `varlist' `if' `in' `wt', `detail' `option'
+
+    
+    if "`by'" ~= ""{
+        local byoption by(`by')
     }
-    else{
-        if "`by'" ~= ""{
-            local byoption by(`by')
-        }
-        if "`statistics'" == ""{		
-            if "`detail'" == ""{
-                tabstat2 `varlist', `byoption' statistics(n mean sd min max) save  `options'
-                foreach name in `=r(listname)'{
-                    return local `name' `=r(`name')'
-                }
-            }
-            else{
-                tabstat2 `varlist', `byoption' statistics(n mean sd skewness kurtosis) save  `options'
-                foreach name in `=r(listname)'{
-                    return local `name' `=r(`name')'
-                }
-                tabstat2 `varlist', `byoption' statistics(min p1 p5 p10 p25 p50) save  `options'
-                foreach name in `=r(listname)'{
-                    return local `name' `=r(`name')'
-                }
-                tabstat2 `varlist', `byoption' statistics(p50 p75 p90 p95 p99 max) save  `options'
-                foreach name in `=r(listname)'{
-                    return local `name' `=r(`name')'
-                }
+    if "`statistics'" == ""{		
+        if "`detail'" == ""{
+            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(n mean sd min max) save  `options'
+            foreach name in `=r(listname)'{
+                return local `name' `=r(`name')'
             }
         }
         else{
-            tabstat2 `varlist', `byoption' statistics(`statistics') save  `options'
+            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(n mean sd skewness kurtosis) save  `options'
+            foreach name in `=r(listname)'{
+                return local `name' `=r(`name')'
+            }
+            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(min p1 p5 p10 p25 p50) save  `options'
+            foreach name in `=r(listname)'{
+                return local `name' `=r(`name')'
+            }
+            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(p50 p75 p90 p95 p99 max) save  `options'
             foreach name in `=r(listname)'{
                 return local `name' `=r(`name')'
             }
         }
     }
-    end
+    else{
+        tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(`statistics') save  `options'
+        foreach name in `=r(listname)'{
+            return local `name' `=r(`name')'
+        }
+    }
+end
 
 /***************************************************************************************************
-helper: modified version of tabstat.
+helper: modified version of tabstat to
+(i) compute any percentiles
+(ii) use binscatter characterize_unique_vals_sorted for speed
 ***************************************************************************************************/
 cap program drop tabstat2
 program define tabstat2, rclass byable(recall) sort
