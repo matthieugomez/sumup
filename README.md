@@ -1,6 +1,6 @@
 # Stata-stat
 
-The command `stat` is a faster version of `tabstat` (or `tab, summarize()`, `table`, `collapse`etc).
+The command `stat` allows to summarize a variable by group and to display a table with the results. It is a generally 10x faster than `tabstat`, `tab, summarize()`, `table` or `collapse`.
 
 # Syntax 
 The syntax is
@@ -47,5 +47,7 @@ p??			|	??th percentile
 median        | median (same as p50)
 iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
-detaild			| count mean min max sd skewness kurtosis p1 p5 p10 p25 p50 p75 p90 p95 - p99 max
+detail			| count mean min max sd skewness kurtosis p1 p5 p10 p25 p50 p75 p90 p95 - p99 max
 
+
+Statistics are stored in macros of the form r(name_byvalue)
