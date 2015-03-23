@@ -3,23 +3,19 @@
 The command `stat` allows to summarize a variable by group and to display a table with the results. It is a generally 10x faster than `tabstat`, `tab, summarize()`, `table` or `collapse`.
 
 # Syntax 
-The syntax is
-
-```
-stat varname, by(varname) stat(mean sd skewness p94)
-```
 
 By default, the command computes the same statistics than `summary`
 
 ```
 sysuse nlsw88.dta, clear
-stat varname, by(varname) 
+stat hours, by(race) 
 ```
 ![](img/sum.jpg)
 
+Alternatively, a list of statistics can be specified:
 ```
 sysuse nlsw88.dta, clear
-stat varname, by(varname) stat(mean sd skewness p94)
+stat hours, by(race) stat(mean sd skewness p94)
 ```
 ![](img/sum2.jpg)
 

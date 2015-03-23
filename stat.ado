@@ -15,30 +15,41 @@ program stat, rclass
     if "`statistics'" == ""{		
         if "`detail'" == ""{
             tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(n mean sd min max) save  `options'
-            foreach name in `=r(listname)'{
-                return local `name' `=r(`name')'
+            foreach byval in `=r(bylist)'{
+                foreach name in `=r(statlist)'{
+                    return local `name'_`byval' `=r(`name'_`byval')'
+                }
             }
         }
         else{
             tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(n mean sd skewness kurtosis) save  `options'
-            foreach name in `=r(listname)'{
-                return local `name' `=r(`name')'
+            foreach byval in `=r(bylist)'{
+                foreach name in `=r(statlist)'{
+                    return local `name'_`byval' `=r(`name'_`byval')'
+                }
             }
             tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(min p1 p5 p10 p25 p50) save  `options'
-            foreach name in `=r(listname)'{
-                return local `name' `=r(`name')'
+            foreach byval in `=r(bylist)'{
+                foreach name in `=r(statlist)'{
+                    return local `name'_`byval' `=r(`name'_`byval')'
+                }
             }
             tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(p50 p75 p90 p95 p99 max) save  `options'
-            foreach name in `=r(listname)'{
-                return local `name' `=r(`name')'
+            foreach byval in `=r(bylist)'{
+                foreach name in `=r(statlist)'{
+                    return local `name'_`byval' `=r(`name'_`byval')'
+                }
             }
         }
     }
     else{
-        tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(`statistics') save  `options'
-        foreach name in `=r(listname)'{
-            return local `name' `=r(`name')'
-        }
+        tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(`statistics') save  `options' 
+     
+        foreach byval in `=r(bylist)'{
+            foreach name in `=r(statlist)'{
+                return local `name'_`byval' `=r(`name'_`byval')'
+         }
+     }
     }
 end
 
@@ -598,19 +609,17 @@ if "`save'" != "" {
         foreach is of numlist 1/`nstats'{
             local localname  "`name`is''"
             return local `localname' `=`Stat`iby''[`is',1]'
-            local listname `listname'  `localname'
         }
     }
     forvalues iby = 1/`nby' {
+        local bylist `bylist' `=`by_values'[`iby',1]'
         foreach is of numlist 1/`nstats'{
             local localname  "`name`is''_`=`by_values'[`iby',1]'"
             return local `localname' `=`Stat`iby''[`is',1]'
-            local listname `listname'  `localname'
         }
     }
-    return local listname `listname'
-
-
+    return local statlist `name'
+    return local bylist `bylist'
 }
 end
 
