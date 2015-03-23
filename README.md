@@ -51,3 +51,10 @@ detail			| count mean min max sd skewness kurtosis p1 p5 p10 p25 p50 p75 p90 p95
 
 
 Statistics are stored in macros of the form r(name_byvalue)
+
+
+# Comparaison with existing commands
+`stat` borrow heavily `tabstat`. There are two differences:
+- It allows to compute any percentile
+- It is an order of magnitude faster than `tabstat` by using the mata function `characterize_unique_vals_sorted` from `binscatter`
+
