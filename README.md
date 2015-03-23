@@ -43,7 +43,7 @@ cv            | coefficient of variation (sd/mean)
 semean        | standard error of mean (sd/sqrt(n))
 skewness      | skewness
 kurtosis      | kurtosis
-p??				??th percentile
+p??			|	??th percentile
 median        | median (same as p50)
 iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
