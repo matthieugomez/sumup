@@ -28,7 +28,8 @@ stat varname, by(varname) stat(mean sd skewness p94)
 
 The list of allowed statistics is:
 
-||
+Name | Definition
+---|---
 mean          | mean
 count         | count of nonmissing observations
 n             | same as count
