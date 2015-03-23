@@ -15,13 +15,13 @@ By default, the command computes the same statistics than `summary`
 sysuse nlsw88.dta, clear
 stat varname, by(varname) 
 ```
-![](img/sum)
+![](img/sum.jpg)
 
 ```
 sysuse nlsw88.dta, clear
 stat varname, by(varname) stat(mean sd skewness p94)
 ```
-![](img/sum2)
+![](img/sum2.jpg)
 
 
 # List of allowed statistics
