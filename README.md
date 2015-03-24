@@ -1,7 +1,7 @@
 # fasttabstat
 
-The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has exactly the same than `tabstat`, but it has two advantages:
-- `fasttabstat`  is 10x faster than `tabstat`  (by borrowing the Mata function `characterize_unique_vals_sorted` from `binscatter`)
+The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has exactly the same syntax than `tabstat`, with two advantages:
+- `fasttabstat`  is 10x faster than `tabstat`  (by using the Mata function `characterize_unique_vals_sorted` from [binscatter](https://github.com/michaelstepner/binscatter)
 - `fasttabstat` accepts more statistics than `tabstat` : any percentile + the number of missing observations (`nmissing`)
 
 
@@ -44,9 +44,9 @@ cv            | coefficient of variation (sd/mean)
 semean        | standard error of mean (sd/sqrt(n))
 skewness      | skewness
 kurtosis      | kurtosis
-p??			|	??th percentile
 median        | median (same as p50)
 iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
-detail			| count mean min max sd skewness kurtosis p1 p5 p10 p25 p50 p75 p90 p95 - p99 max
+nmissing	|	Number of missing observations
+p??			|	??th percentile
 
