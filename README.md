@@ -4,13 +4,13 @@ The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has e
 - `fasttabstat`  is 10x faster than `tabstat`  thanks to a Mata function borrowed from [binscatter](https://github.com/michaelstepner/binscatter)
 - `fasttabstat` accepts more statistics than `tabstat` : 
 	- any percentile 
-	- `nmissing`, the number of missing observations.
+	- `nmissing` : number of missing observations.
 
 
 # stat
-The command `stat` is simply a wrapper for `fastabstat`, with default options closer to `summarize` 
--  The same statistics than `summarize` are computed by default (the option `detail` is llowed)
-- `stat` returns a list of scalar of the form `r(statname_byvalue)`
+The command `stat` is a wrapper for `fastabstat`, with a syntax closer to `summarize`:
+-  By default, the same statistics than `summarize` & the option `detail` is allowed.
+- `stat` returns a list of scalar of the form `r(statname_byvalue)` instead of matrices
 
 
 Examples:
