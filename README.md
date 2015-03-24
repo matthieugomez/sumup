@@ -1,22 +1,23 @@
 # fasttabstat
 
-The command `fasttabstat` is an better version of `tabstat`. While its syntax is exactly the same than `tabstat`, `fasttabstat` has two advantages
+The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has exactly the same than `tabstat`, but it has two advantages:
 - `fasttabstat`  is 10x faster than `tabstat`  (by borrowing the Mata function `characterize_unique_vals_sorted` from `binscatter`)
-- `fasttabstat` accepts more statistics: any percentile + the number of missing observations
+- `fasttabstat` accepts more statistics than `tabstat` : any percentile + the number of missing observations (`nmissing`)
 
 
 # stat
-The command `stat` is a wrapper for `fastabstat` that behaves more similarly to `summarize` 
--  When `statistics` is not specified, it computes the same statistics than `summarize` (the option `detail` is llowed)
-- It returns a list of scalar of the form `statname_byvalue`
+The command `stat` is simply a wrapper for `fastabstat`, with default options closer to `summarize` 
+-  The same statistics than `summarize` are computed by default (the option `detail` is llowed)
+- `stat` returns a list of scalar of the form `r(statname_byvalue)`
 
+
+Examples:
 ```
 sysuse nlsw88.dta, clear
 stat hours, by(race) 
 ```
 ![](img/sum.jpg)
 
-Alternatively, a list of statistics can be specified:
 ```
 sysuse nlsw88.dta, clear
 stat hours, by(race) stat(mean sd skewness p94)
@@ -24,7 +25,7 @@ stat hours, by(race) stat(mean sd skewness p94)
 ![](img/sum2.jpg)
 
 
-# List of allowed statistics
+# List of statistics
 
 For both commands, the list of allowed statistics is:
 
