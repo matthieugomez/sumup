@@ -1,75 +1,28 @@
 program stat, rclass 
-    syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) STATistics(str) stats(str)  missing *]
-    version 12.1
-
-    if ("`weight'"!="") local wt [`weight'`exp']
-
-    if "`stats'" ~= ""{
-        local statistics `stats'
-    }
-
-    
-    if "`by'" ~= ""{
-        local byoption by(`by')
-    }
-    if "`statistics'" == ""{		
-        if "`detail'" == ""{
-            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(n mean sd min max) save  `options'
-            foreach byval in `=r(bylist)'{
-                foreach name in `=r(statlist)'{
-                    return local `name'_`byval' `=r(`name'_`byval')'
-                }
-            }
-        }
-        else{
-            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(n mean sd skewness kurtosis) save  `options'
-            foreach byval in `=r(bylist)'{
-                foreach name in `=r(statlist)'{
-                    return local `name'_`byval' `=r(`name'_`byval')'
-                }
-            }
-            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(min p1 p5 p10 p25 p50) save  `options'
-            foreach byval in `=r(bylist)'{
-                foreach name in `=r(statlist)'{
-                    return local `name'_`byval' `=r(`name'_`byval')'
-                }
-            }
-            tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(p50 p75 p90 p95 p99 max) save  `options'
-            foreach byval in `=r(bylist)'{
-                foreach name in `=r(statlist)'{
-                    return local `name'_`byval' `=r(`name'_`byval')'
-                }
-            }
-            return local statlist n mean sd skewness kurtosis (min p1 p5 p10 p25 p50 p75 p90 p95 p99 max
-            return local bylist `=r(bylist)''
-        }
-    }
-    else{
-        tabstat2 `varlist' `if' `in' `wt', `byoption' statistics(`statistics') save  `options' 
-     
-        foreach byval in `=r(bylist)'{
-            foreach name in `=r(statlist)'{
-                return local `name'_`byval' `=r(`name'_`byval')'
-         }
-         return local statlist `=r(statlist)'
-         return local bylist `=r(bylist)''
-     }
-    }
-end
-
-/***************************************************************************************************
-helper: modified version of tabstat to
-(i) compute any percentiles
-(ii) use binscatter characterize_unique_vals_sorted for speed
-***************************************************************************************************/
-cap program drop tabstat2
-program define tabstat2, rclass byable(recall) sort
-    version 8, missing
-
-syntax varlist(numeric) [if] [in] [aw fw] [ , /*
-*/      BY(varname) CASEwise Columns(str) Format Format2(str) /*
+    syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) STATistics(str) stats(str)  missing seps(numlist) /*
+*/     CASEwise Columns(str) Format Format2(str) /*
 */      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
 */      SAME SAVE noSEParator Statistics(str) STATS(str) noTotal septable(string)]
+
+if ("`weight'"!="") local wt [`weight'`exp']
+
+if "`stats'" ~= ""{
+    local statistics `stats'
+}
+
+
+if "`by'" ~= ""{
+    local byoption by(`by')
+}
+if "`statistics'" == ""{		
+    if "`detail'" == ""{
+        local statistics  n mean sd min max
+    }
+    else{
+        local statistics n mean sd skewness kurtosis min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
+        local seps 5 11
+    }
+}    
 
 if "`casewise'" != "" {
     local same same
@@ -404,10 +357,38 @@ local cbar  = `lleft' + 1
 local lsize = c(linesize)
 * number of non-label elements in the row of a block
 local neblock = int((`lsize' - `cbar')/10)
-* number of blocks if stats horizontal
-local nsblock  = 1 + int((`nstats'-1)/`neblock')
-* number of blocks if variables horizontal
-local nvblock  = 1 + int((`nvars'-1)/`neblock')
+if "`seps'" == ""{
+    * number of blocks if stats horizontal
+    local nsblock  = 1 + int((`nstats'-1)/`neblock')
+    * number of blocks if variables horizontal
+    local is20  0 
+    forvalues i = 1/`nsblock' {
+        local is1`i' `=`is2`=`i'-1''+1'
+        local is2`i' `=min(`nstats', `i'+`neblock'-1)'
+    }
+    local nvblock  = 1 + int((`nvars'-1)/`neblock')
+    local i20  0 
+    forvalues i = 1/`nvblock' {
+        local i1`i' `=`i2`=`i'-1''+1'
+        local i2`i' `=`i1`i''+`neblock'-1'
+    }
+}
+else{
+    local seps `seps' `nstats'
+    local nsblock : word count `seps'
+    local is20  0 
+    forvalues i = 1/`nsblock' {
+        local is1`i' `=`is2`=`i'-1''+1'
+        local is2`i' `: word `i' of `seps''
+    }
+    local nvblock : word count `seps'
+    local i20  0 
+    forvalues i = 1/`nsblock' {
+       local i1`i' `=`i2`=`i'-1''+1'
+       local i2`i' `: word `i' of `seps''
+   }
+}
+
 
 if "`descr'" != "" & "`by'" != "" {
     local byalign lalign
@@ -438,12 +419,11 @@ di
 
 * loop over all nsblock blocks of statistics
 
-local is2 0
 forvalues isblock = 1/`nsblock' {
 
 * is1..is2 are indices of statistics in a block
-local is1 = `is2' + 1
-local is2 = min(`nstats', `is1'+`neblock'-1)
+local is1 = `is1`isblock''
+local is2 = `is2`isblock''
 
 * display header
 if "`by'" != "" {
@@ -548,8 +528,8 @@ local i2 0
 forvalues iblock = 1/`nvblock' {
 
 * i1..i2 are indices of variables in a block
-local i1 = `i2' + 1
-local i2 = min(`nvars', `i1'+`neblock'-1)
+local i1 = `i1`isblock''
+local i2 = `i2`isblock''
 
 * display header
 if "`by'" != "" {
@@ -612,14 +592,14 @@ if "`save'" != "" {
         local iby `=`nby' + 1'
         foreach is of numlist 1/`nstats'{
             local localname  "`name`is''"
-            return local `localname' `=`Stat`iby''[`is',1]'
+            return scalar `localname' = `=`Stat`iby''[`is',1]'
         }
     }
     forvalues iby = 1/`nby' {
         local bylist `bylist' `=`by_values'[`iby',1]'
         foreach is of numlist 1/`nstats'{
             local localname  "`name`is''_`=`by_values'[`iby',1]'"
-            return local `localname' `=`Stat`iby''[`is',1]'
+            return scalar `localname' = `=`Stat`iby''[`is',1]'
         }
     }
     return local statlist `stats'

@@ -1,10 +1,14 @@
-# Stata-stat
+# fasttabstat
 
-The command `stat` allows to summarize a variable by group and to display a table with the results. It is a generally 10x faster than `tabstat`, `tab, summarize()`, `table` or `collapse`.
+The command `fasttabstat` is an better version of `tabstat`. The syntax  of `fasttabstat` is exactly the same than `tabstat`, but has two advantages
+- `fasttabstat`  is 10x faster than `tabstat`  (by borrowing the Mata function `characterize_unique_vals_sorted` from `binscatter`)
+- it allows for more statistics: any percentile + the number of missing observations
 
-# Syntax 
 
-By default, the command computes the same statistics than `summary`
+# stat
+The command `stat` is a wrapper for `fastabstat` that behaves more similarly to `summarize` 
+-  When `statistics` is not specified, it computes the same statistics than `summarize` (the option `detail` is llowed)
+- It returns a list of scalar of the form `statname_byvalue`
 
 ```
 sysuse nlsw88.dta, clear
@@ -22,7 +26,7 @@ stat hours, by(race) stat(mean sd skewness p94)
 
 # List of allowed statistics
 
-The list of allowed statistics is:
+For both commands, the list of allowed statistics is:
 
 Name | Definition
 ---|---
@@ -44,13 +48,4 @@ median        | median (same as p50)
 iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
 detail			| count mean min max sd skewness kurtosis p1 p5 p10 p25 p50 p75 p90 p95 - p99 max
-
-
-Statistics are stored in macros of the form r(name_byvalue)
-
-
-# Comparaison with existing commands
-`stat` borrow heavily `tabstat`. There are two differences:
-- It allows to compute any percentile
-- It is an order of magnitude faster than `tabstat` by using the mata function `characterize_unique_vals_sorted` from `binscatter`
 
