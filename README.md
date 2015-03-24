@@ -1,8 +1,8 @@
 # fasttabstat
 
-The command `fasttabstat` is an better version of `tabstat`. The syntax  of `fasttabstat` is exactly the same than `tabstat`, but has two advantages
-- `fasttabstat`  is 10x faster than `tabstat`  (by borrowing the Mata function `characterize_unique_vals_sorted` from `binscatter`)
-- it allows for more statistics: any percentile + the number of missing observations
+The command `fasttabstat` is an better version of `tabstat`. While its syntax is exactly the same than `tabstat`, `fasttabstat` has two advantages
+- `fasttabstat`  is 10x faster than `tabstat`  (I borrow the Mata function `characterize_unique_vals_sorted` from `binscatter`)
+- `fasttabstat` accepts more statistics: any percentile + the number of missing observations
 
 
 # stat
