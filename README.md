@@ -1,7 +1,7 @@
 # fasttabstat
 
 The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has exactly the same syntax than `tabstat`, with two advantages:
-- `fasttabstat`  is 10x faster than `tabstat`  thanks to some code borrowed from [binscatter](https://github.com/michaelstepner/binscatter)
+- `fasttabstat`  is 10x faster than `tabstat`  thanks to a Mata function borrowed from [binscatter](https://github.com/michaelstepner/binscatter)
 - `fasttabstat` accepts more statistics than `tabstat` : any percentile + the number of missing observations (`nmissing`)
 
 
