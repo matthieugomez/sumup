@@ -40,6 +40,8 @@ program stat, rclass
                     return local `name'_`byval' `=r(`name'_`byval')'
                 }
             }
+            return local statlist n mean sd skewness kurtosis (min p1 p5 p10 p25 p50 p75 p90 p95 p99 max
+            return local bylist `=r(bylist)''
         }
     }
     else{
@@ -49,6 +51,8 @@ program stat, rclass
             foreach name in `=r(statlist)'{
                 return local `name'_`byval' `=r(`name'_`byval')'
          }
+         return local statlist `=r(statlist)'
+         return local bylist `=r(bylist)''
      }
     }
 end
@@ -618,7 +622,7 @@ if "`save'" != "" {
             return local `localname' `=`Stat`iby''[`is',1]'
         }
     }
-    return local statlist `name'
+    return local statlist `stats'
     return local bylist `bylist'
 }
 end
