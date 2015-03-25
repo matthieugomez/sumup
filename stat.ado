@@ -2,12 +2,22 @@ program stat, rclass
 syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) STATistics(str) stats(str)  missing seps(numlist) /*
 */     CASEwise Columns(str) Format Format2(str) /*
 */      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
-*/      SAME SAVE noSEParator Statistics(str) STATS(str) noTotal septable(string)]
+*/      SAME SAVE noSEParator Statistics(str) STATS(str) noTotal septable(string) /*
+*/      output(string) replace]
 
 if ("`weight'"!="") local wt [`weight'`exp']
 
 if "`stats'" ~= ""{
     local statistics `stats'
+}
+
+if "`output'" ~= ""{
+    if "`replace'" == ""{
+        cap confirm file `output'
+        if _rc{
+            display `"file `output' already exists"'
+        }
+    }
 }
 
 
@@ -384,9 +394,9 @@ else{
     local nvblock : word count `seps'
     local i20  0 
     forvalues i = 1/`nsblock' {
-     local i1`i' `=`i2`=`i'-1''+1'
-     local i2`i' `: word `i' of `seps''
- }
+        local i1`i' `=`i2`=`i'-1''+1'
+        local i2`i' `: word `i' of `seps''
+    }
 }
 
 
@@ -587,24 +597,68 @@ else {
 * save results (mainly for certification)
 * ---------------------------------------
 
-if "`save'" != "" {
-    if "`by'" == ""{
-        local iby `=`nby' + 1'
-        foreach is of numlist 1/`nstats'{
-            local localname  "`name`is''"
-            return scalar `localname' = `=`Stat`iby''[`is',1]'
-        }
+
+if "`by'" == ""{
+    local iby `=`nby' + 1'
+    foreach is of numlist 1/`nstats'{
+        local localname  "`name`is''"
+        return scalar `localname' = `=`Stat`iby''[`is',1]'
     }
-    forvalues iby = 1/`nby' {
-        local bylist `bylist' `=`by_values'[`iby',1]'
-        foreach is of numlist 1/`nstats'{
-            local localname  "`name`is''_`=`by_values'[`iby',1]'"
-            return scalar `localname' = `=`Stat`iby''[`is',1]'
-        }
-    }
-    return local statlist `stats'
-    return local bylist `bylist'
 }
+forvalues iby = 1/`nby' {
+    local bylist `bylist' `=`by_values'[`iby',1]'
+    foreach is of numlist 1/`nstats'{
+        local localname  "`name`is''_`=`by_values'[`iby',1]'"
+        return scalar `localname' = `=`Stat`iby''[`is',1]'
+    }
+}
+return local statlist `stats'
+return local bylist `bylist'
+
+if "`output'" ~= ""{
+    tempname memhold
+
+    /* 
+    *long 
+    postfile `memhold' `by' str20 varname str5 statname value using `output', `replace'
+    forvalues iby = 1/`nby' {
+        forvalues ivar = 1/`nvars'{
+            forvalues is = 1/`nstats'{
+                post  `memhold' (`=`by_values'[`iby',1]') ("`var`ivar''") ("`name`is''") (`=`Stat`iby''[`is',`ivar']')
+            }
+        }
+    }
+    */
+
+    *wide
+    local varnames
+    if `nstats' == 1{
+        forvalues ivar = 1/`nvars'{
+            local varnames `varnames' `var`ivar''
+        }
+    }
+    else{
+        forvalues is = 1/`nstats'{
+            forvalues ivar = 1/`nvars'{
+                local varnames `varnames' `var`ivar''_`name`is''
+            }
+        }
+
+        postfile `memhold' `by' `varnames' using `output', `replace'
+        forvalues iby = 1/`nby' {
+            local post ""
+            forvalues ivar = 1/`nvars'{
+                forvalues is = 1/`nstats'{
+                    local post  `post' (`=`Stat`iby''[`is',`ivar']')
+                }
+                post  `memhold' (`=`by_values'[`iby',1]') `post'
+            }
+        }
+    }
+    postclose `memhold'
+}
+
+
 end
 
 /***************************************************************************************************
