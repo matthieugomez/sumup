@@ -275,7 +275,7 @@ if "`total'" == "" {
 
     forvalues i = 1/`nvars' {
         if regexm("`cmd'", "sum") {
-            qui summ `var`i'' if `touse' `wght', `summopt'
+            qui summ `var`i''  `wght' in `touse_first'/`touse_last', `summopt'
             forvalues is = 1/`nstats' {
                 if "`cmd`is''" == "sum"{
                     if "`name`is''"== "freq"{
@@ -291,7 +291,7 @@ if "`total'" == "" {
             }
         }
         if "`pctileopt'" ~= ""{
-            qui _pctile `var`i'' if `touse' `wght', p(`pctileopt')
+            qui _pctile `var`i'' `wght' in `touse_first'/`touse_last', p(`pctileopt')
             forvalues is = 1/`nstats' {
                 if "`cmd`is''" == "pctile"{
                     mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -538,8 +538,8 @@ else {
     forvalues iblock = 1/`nvblock' {
 
         * i1..i2 are indices of variables in a block
-        local i1 = `i1`isblock''
-        local i2 = `i2`isblock''
+        local i1 = `i1`iblock''
+        local i2 = `i2`iblock''
 
         * display header
         if "`by'" != "" {

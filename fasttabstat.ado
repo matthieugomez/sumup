@@ -170,7 +170,6 @@ program define fasttabstat, rclass byable(recall) sort
 
 		* the data are sorted on by groups, putting unused obs last
 		* be careful not to change the sort order
-		* note that touse is coded -1/0 rather than 1/0!
 
 		sort `touse' `by'
 
@@ -254,7 +253,7 @@ program define fasttabstat, rclass byable(recall) sort
 
 		forvalues i = 1/`nvars' {
 			if regexm("`cmd'", "sum") {
-				qui summ `var`i'' if `touse' `wght', `summopt'
+				qui summ `var`i'' `wght' in `touse_first'/`touse_last', `summopt'
 				forvalues is = 1/`nstats' {
 					if "`cmd`is''" == "sum"{
 						if "`name`is''"== "freq"{
@@ -270,7 +269,7 @@ program define fasttabstat, rclass byable(recall) sort
 				}
 			}
 			if "`pctileopt'" ~= ""{
-				qui _pctile `var`i'' if `touse' `wght', p(`pctileopt')
+				qui _pctile `var`i'' `wght' in `touse_first'/`touse_last', p(`pctileopt')
 				forvalues is = 1/`nstats' {
 					if "`cmd`is''" == "pctile"{
 						mat `Stat`iby''[`is',`i'] = `expr`is''
