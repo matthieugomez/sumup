@@ -5,15 +5,12 @@ syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) Statist
 */      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
 */      SAME SAVE noSEParator noTotal septable(string)]
 
-noi di "`statistics'"
 
 if ("`weight'"!="") local wt [`weight'`exp']
 
 if "`stats'" ~= ""{
     local statistics `stats'
 }
-
-
 
 
 if "`statistics'" == ""{		
@@ -23,6 +20,7 @@ if "`statistics'" == ""{
     else{
         local statistics n mean sd skewness kurtosis min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
         local seps 5 11
+        local columns statistics
     }
 }    
 
@@ -362,17 +360,17 @@ local neblock = int((`lsize' - `cbar')/10)
 if "`seps'" == ""{
     * number of blocks if stats horizontal
     local nsblock  = 1 + int((`nstats'-1)/`neblock')
-    * number of blocks if variables horizontal
     local is20  0 
     forvalues i = 1/`nsblock' {
         local is1`i' `=`is2`=`i'-1''+1'
-        local is2`i' `=min(`nstats', `i'+`neblock'-1)'
+        local is2`i' `=min(`nstats', `is1`i'' + `neblock' - 1)'
     }
+    * number of blocks if variables horizontal
     local nvblock  = 1 + int((`nvars'-1)/`neblock')
     local i20  0 
     forvalues i = 1/`nvblock' {
         local i1`i' `=`i2`=`i'-1''+1'
-        local i2`i' `=`i1`i''+`neblock'-1'
+        local i2`i' `=min(`nvars', `i1`i'' + `neblock' - 1)'
     }
 }
 else{
