@@ -1,9 +1,11 @@
 program stat, rclass 
-syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) STATistics(str) stats(str)  missing seps(numlist) /*
+version 12.1
+syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) Statistics(str)  missing seps(numlist) /*
 */     CASEwise Columns(str) Format Format2(str) /*
 */      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
-*/      SAME SAVE noSEParator Statistics(str) STATS(str) noTotal septable(string) /*
-*/      output(string) replace]
+*/      SAME SAVE noSEParator noTotal septable(string)]
+
+noi di "`statistics'"
 
 if ("`weight'"!="") local wt [`weight'`exp']
 
@@ -11,19 +13,9 @@ if "`stats'" ~= ""{
     local statistics `stats'
 }
 
-if "`output'" ~= ""{
-    if "`replace'" == ""{
-        cap confirm file `output'
-        if _rc{
-            display `"file `output' already exists"'
-        }
-    }
-}
 
 
-if "`by'" ~= ""{
-    local byoption by(`by')
-}
+
 if "`statistics'" == ""{		
     if "`detail'" == ""{
         local statistics  n mean sd min max
@@ -48,7 +40,7 @@ if `"`stats'"' != "" {
     local stats
 }
 
-if "`total'" != "" & "`by'" == "" {
+if "`nototal'" != "" & "`by'" == "" {
     di as txt "nothing to display"
     exit 0
 }
@@ -264,7 +256,7 @@ else {
     local nby 0
 }
 
-if "`total'" == "" {
+if "`nototal'" == "" {
     * unconditional (Total) statistics are stored in Stat`nby+1'
     local iby = `nby'+1
 
@@ -275,7 +267,7 @@ if "`total'" == "" {
 
     forvalues i = 1/`nvars' {
         if regexm("`cmd'", "sum") {
-            qui summ `var`i''  `wght' in `touse_first'/`touse_last', `summopt'
+            qui summ `var`i''  `wght' if `touse' == 1, `summopt'
             forvalues is = 1/`nstats' {
                 if "`cmd`is''" == "sum"{
                     if "`name`is''"== "freq"{
@@ -291,7 +283,7 @@ if "`total'" == "" {
             }
         }
         if "`pctileopt'" ~= ""{
-            qui _pctile `var`i'' `wght' in `touse_first'/`touse_last', p(`pctileopt')
+            qui _pctile `var`i'' `wght' if `touse' == 1, p(`pctileopt')
             forvalues is = 1/`nstats' {
                 if "`cmd`is''" == "pctile"{
                     mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -343,7 +335,7 @@ if "`by'" != "" {
     else {
         local byw = max(length("`by'"), `byw')
     }
-    if "`total'" == "" {
+    if "`nototal'" == "" {
         local byw = max(`byw', 6)
     }
 }
@@ -451,7 +443,7 @@ if "`incol'" == "statistics" {
     di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
 
         * loop over the categories of -by- (1..nby) and -total- (nby+1)
-        local nbyt = `nby' + ("`total'" == "")
+        local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
             forvalues i = 1/`nvars' {
                 if "`by'" != "" {
@@ -507,7 +499,7 @@ if "`incol'" == "statistics" {
             if (`iby' >= `nbyt') {
             di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
             }
-            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`total'" == "")) {
+            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
             di as txt "{hline `lleft'}{c +}{hline `ndash'}"
             }
         }
@@ -557,7 +549,7 @@ else {
     di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
 
         * loop over the categories of -by- (1..nby) and -total- (nby+1)
-        local nbyt = `nby' + ("`total'" == "")
+        local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
             forvalues is = 1/`nstats' {
                 if "`by'" != "" {
@@ -583,7 +575,7 @@ else {
             if (`iby' >= `nbyt') {
             di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
             }
-            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`total'" == "")) {
+            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
             di as txt "{hline `lleft'}{c +}{hline `ndash'}"
             }
         } /* forvalues iby */

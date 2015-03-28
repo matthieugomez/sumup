@@ -253,7 +253,7 @@ program define fasttabstat, rclass byable(recall) sort
 
 		forvalues i = 1/`nvars' {
 			if regexm("`cmd'", "sum") {
-				qui summ `var`i'' `wght' in `touse_first'/`touse_last', `summopt'
+				qui summ `var`i'' `wght' if `touse' == 1, `summopt'
 				forvalues is = 1/`nstats' {
 					if "`cmd`is''" == "sum"{
 						if "`name`is''"== "freq"{
@@ -269,7 +269,7 @@ program define fasttabstat, rclass byable(recall) sort
 				}
 			}
 			if "`pctileopt'" ~= ""{
-				qui _pctile `var`i'' `wght' in `touse_first'/`touse_last', p(`pctileopt')
+				qui _pctile `var`i'' `wght' if `touse' == 1, p(`pctileopt')
 				forvalues is = 1/`nstats' {
 					if "`cmd`is''" == "pctile"{
 						mat `Stat`iby''[`is',`i'] = `expr`is''
