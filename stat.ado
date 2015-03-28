@@ -1,6 +1,6 @@
 program stat, rclass 
 version 12.1
-syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varname) Statistics(str)  missing seps(numlist) /*
+syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varlist) Statistics(str)  missing seps(numlist) /*
 */     CASEwise Columns(str) Format Format2(str) /*
 */      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
 */      SAME SAVE noSEParator noTotal septable(string)]
@@ -185,17 +185,42 @@ if "`by'" != "" {
 
     sort `touse' `by'
 
+    if `:word count `by''>1{
+        tempvar byv
+        by `touse' `by': gen `byv' = _n == 1 
+        qui replace `byv' = sum(`byv')
+        local bytype str20
+        label var `byv' `lab'
+    }
+    else{
+        local byv `by'
+        local bytype : type `by'
+    }
+
+
     /* code from binscatter */
     qui count if `touse'
     local samplesize=r(N)
     local touse_first=_N-`samplesize'+1
     local touse_last=_N
-    local bytype : type `by'
-    mata: characterize_unique_vals_sorted("`by'",`touse_first',`touse_last', 100)
-    local nby = r(r)
-    tempname by_boundaries by_values
-    matrix `by_boundaries'=r(boundaries)        
-    matrix `by_values'=r(values)
+    cap confirm numeric variable `byv'
+    if _rc{
+        mata: scharacterize_unique_vals_sorted("`byv'",`touse_first',`touse_last', 100)
+        local nby = r(r)
+        forvalues i = 1/`nby'{
+            local byval`i' `=r(r`i')'
+        }
+        tempname by_boundaries
+        matrix `by_boundaries'=r(boundaries)   
+    }
+    else{
+        mata: characterize_unique_vals_sorted("`byv'",`touse_first',`touse_last', 100)
+        local nby = r(r)
+        tempname by_boundaries by_values
+        matrix `by_boundaries'=r(boundaries)        
+        matrix `by_values'=r(values)
+    }
+
 
     /* get back to original */
     forvalues iby = 1/`nby' {
@@ -203,7 +228,10 @@ if "`by'" != "" {
         mat `Stat`iby'' = J(`nstats',`nvars',0)
         mat colnames `Stat`iby'' = `varlist'
         mat rownames `Stat`iby'' = `stats'
-        local byval  `=`by_values'[`iby', 1]'
+        local byval ""
+        foreach b in `by' {
+            local byval `byval' `=`b'[`=`by_boundaries'[`iby',1]']'
+        }
         local by1 `=`by_boundaries'[`iby',1]'
         local by2 `=`by_boundaries'[`iby',2]' 
 
@@ -240,13 +268,13 @@ if "`by'" != "" {
 
         * save label for groups in lab1, lab2 etc
         if substr("`bytype'",1,3) != "str" {
-            local lab`iby' : label (`by') `byval'
+            local lab`iby' : label (`byv') `byval'
         }
         else {
             /* 32 = max value of `labelwidth'               */
             /* We record c(maxvallablen) because of r()     */
             /* We use -display- to expand char(0) to \0     */
-            local lab`iby' : di (substr(`byval', 1, c(maxvlabellen)))
+            local lab`iby' : di (substr(`"`byval'"', 1, c(maxvlabellen)))
         }
     }
 }
@@ -296,11 +324,11 @@ if "`nototal'" == "" {
 * constants for displaying results
 * --------------------------------
 
-if "`by'" != "" {
+if "`byv'" != "" {
     if substr("`bytype'",1,3) != "str" {
-        local lv : value label `by'
+        local lv : value label `byv'
         if "`lv'" != "" {
-            local lg : label (`by') maxlength
+            local lg : label (`byv') maxlength
             local byw = min(`labelwidth',`lg')
         }
         else {
@@ -312,7 +340,7 @@ if "`by'" != "" {
         local byw=min(real(substr("`bytype'",4,.)),`labelwidth')
         local bytype str
     }
-    capture local for : format `by'
+    capture local for : format `byv'
     capture local if_date_for = substr("`for'", index("`for'", "%"), index("`for'", "d"))
     capture local if_time_for = substr("`for'", index("`for'", "%"), index("`for'", "t"))
     if "`if_date_for'" == "%d" | "`if_time_for'" == "%t" {
@@ -346,11 +374,11 @@ local ndigit  9
 local colwidth = `ndigit'+1
 
 if "`incol'" == "statistics" {
-    local lleft = (1 + `byw')*("`by'"!="") + ///
+    local lleft = (1 + `byw')*("`byv'"!="") + ///
     (`varwidth'+1)*("`descr'"!="")
 }
 else {
-    local lleft = (1 + `byw')*("`by'"!="") + (8+1)*("`descr'"!="")
+    local lleft = (1 + `byw')*("`byv'"!="") + (8+1)*("`descr'"!="")
 }
 local cbar  = `lleft' + 1
 
@@ -390,7 +418,7 @@ else{
 }
 
 
-if "`descr'" != "" & "`by'" != "" {
+if "`descr'" != "" & "`byv'" != "" {
     local byalign lalign
 }
 else {
@@ -406,12 +434,12 @@ if "`incol'" == "statistics" {
     /*         
     if "`descr'" == "" {
         di as txt _n `"Summary for variables: `varlist'"'
-        if "`by'" != "" {
-            local bylabel : var label `by'
+        if "`byv'" != "" {
+            local bylabel : var label `byv'
             if `"`bylabel'"' != "" {
                 local bylabel `"(`bylabel')"'
             }
-            di as txt _col(6) `"by categories of: `by' `bylabel'"'
+            di as txt _col(6) `"by categories of: `byv' `bylabel'"'
         }
     }
     */
@@ -426,7 +454,7 @@ if "`incol'" == "statistics" {
         local is2 = `is2`isblock''
 
         * display header
-        if "`by'" != "" {
+        if "`byv'" != "" {
             local byname = abbrev("`by'",`byw')
         di as txt "{`byalign' `byw':`byname'} {...}"
         }
@@ -444,16 +472,16 @@ if "`incol'" == "statistics" {
         local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
             forvalues i = 1/`nvars' {
-                if "`by'" != "" {
+                if "`byv'" != "" {
                     if `i' == 1 {
                         local lab = substr(`"`lab`iby''"', 1,`byw')
                         if `"`lab'"' != "Total" {
-                            capture local val_lab : value label `by'
+                            capture local val_lab : value label `byv'
                             if "`val_lab'" == "" {
-                                local type : type `by'
+                                local type : type `byv'
                                 local yes_str = index("`type'", "str")
                                 if `yes_str' == 0 {
-                                    capture local for : format `by'
+                                    capture local for : format `byv'
                                     capture local if_date_for = index("`for'", "%d")
                                     capture local if_time_for = index("`for'", "%t")
                                     if `if_date_for' > 0 | `if_time_for' > 0 {
@@ -512,12 +540,12 @@ else {
 
     if "`descr'" == "" {
         di as txt _n `"Summary statistics:`names'"'
-        if "`by'" != "" {
-            local bylabel : var label `by'
+        if "`byv'" != "" {
+            local bylabel : var label `byv'
             if `"`bylabel'"' != "" {
                 local bylabel `"(`bylabel')"'
             }
-            di as txt `"  by categories of: `by' `bylabel'"'
+            di as txt `"  by categories of: `byv' `bylabel'"'
         }
     }
     di
@@ -532,8 +560,8 @@ else {
         local i2 = `i2`iblock''
 
         * display header
-        if "`by'" != "" {
-        di as txt "{`byalign' `byw':`by'} {...}"
+        if "`byv'" != "" {
+        di as txt "{`byalign' `byw':`byv'} {...}"
         }
         if "`descr'" != "" {
         di as txt "   stats {...}"
@@ -550,7 +578,7 @@ else {
         local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
             forvalues is = 1/`nstats' {
-                if "`by'" != "" {
+                if "`byv'" != "" {
                     if `is' == 1 {
                         local lab = substr(`"`lab`iby''"', 1, `byw')
                     di as txt `"{`byalign' `byw':`lab'} {...}"'
@@ -588,7 +616,7 @@ else {
 * ---------------------------------------
 
 
-if "`by'" == ""{
+if "`byv'" == ""{
     local iby `=`nby' + 1'
     foreach is of numlist 1/`nstats'{
         local localname  "`name`is''"
@@ -596,57 +624,18 @@ if "`by'" == ""{
     }
 }
 forvalues iby = 1/`nby' {
-    local bylist `bylist' `=`by_values'[`iby',1]'
+    local r(r`iby') `byval`i''
     foreach is of numlist 1/`nstats'{
-        local localname  "`name`is''_`=`by_values'[`iby',1]'"
+        local localname  "`name`is''_`iby'"
         return scalar `localname' = `=`Stat`iby''[`is',1]'
     }
 }
 return local statlist `stats'
 return local bylist `bylist'
-
-if "`output'" ~= ""{
-    tempname memhold
-
-    /* 
-    *long 
-    postfile `memhold' `by' str20 varname str5 statname value using `output', `replace'
-    forvalues iby = 1/`nby' {
-        forvalues ivar = 1/`nvars'{
-            forvalues is = 1/`nstats'{
-                post  `memhold' (`=`by_values'[`iby',1]') ("`var`ivar''") ("`name`is''") (`=`Stat`iby''[`is',`ivar']')
-            }
-        }
-    }
-    */
-
-    *wide
-    local varnames
-    if `nstats' == 1{
-        forvalues ivar = 1/`nvars'{
-            local varnames `varnames' `var`ivar''
-        }
-    }
-    else{
-        forvalues is = 1/`nstats'{
-            forvalues ivar = 1/`nvars'{
-                local varnames `varnames' `var`ivar''_`name`is''
-            }
-        }
-
-        postfile `memhold' `by' `varnames' using `output', `replace'
-        forvalues iby = 1/`nby' {
-            local post ""
-            forvalues ivar = 1/`nvars'{
-                forvalues is = 1/`nstats'{
-                    local post  `post' (`=`Stat`iby''[`is',`ivar']')
-                }
-                post  `memhold' (`=`by_values'[`iby',1]') `post'
-            }
-        }
-    }
-    postclose `memhold'
+forvalues iby = `nby'(-1)1 {
+    return local r`iby'  `byval`iby''
 }
+return scalar r = `nby'
 
 
 end
@@ -877,4 +866,74 @@ mata:
 
     }
 
+end
+
+/***************************************************************************************************
+
+***************************************************************************************************/
+
+
+version 12.1
+set matastrict on
+
+mata:
+    void scharacterize_unique_vals_sorted(string scalar var, real scalar first, real scalar last, real scalar maxuq) {
+     // Inputs: a string variable, a starting & ending obs #, and a maximum number of unique values
+     // Requires: the data to be sorted on the specified variable within the observation boundaries given
+     //             (no check is made that this requirement is satisfied)
+     // Returns: the number of unique values found
+     //         the unique values found
+     //         the observation boundaries of each unique value in the dataset
+
+
+     // initialize returned results
+     real scalar Nunique
+     Nunique=0
+
+     // changes here
+     string matrix values
+     values=J(maxuq,1,"")
+
+     real matrix boundaries
+     boundaries=J(maxuq,2,.)
+
+     // initialize computations
+     real scalar var_index
+     var_index=st_varindex(var)
+
+     // change here
+     string scalar prevvalue
+     string scalar curvalue
+
+     // perform computations
+     real scalar obs
+     for (obs=first; obs<=last; obs++) {
+        // change here
+        curvalue=_st_sdata(obs,var_index)
+        if (curvalue!=prevvalue) {
+           Nunique++
+           if (Nunique<=maxuq) {
+            prevvalue=curvalue
+            values[Nunique,1]=curvalue
+            boundaries[Nunique,1]=obs
+            if (Nunique>1) boundaries[Nunique-1,2]=obs-1
+        }
+        
+        else {
+            exit(error(134))
+        }
+    }
+}
+boundaries[Nunique,2]=last
+
+// return results
+stata("return clear")
+st_numscalar("r(r)",Nunique)
+string scalar name
+for (i=1; i <= Nunique; i++){
+    name = "r(r" + strofreal(i) + ")"
+    st_global(name, values[i, 1])
+}
+st_matrix("r(boundaries)",boundaries[1..Nunique,.])
+}
 end
