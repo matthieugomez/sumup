@@ -182,27 +182,27 @@ if "`by'" != "" {
     * the data are sorted on by groups, putting unused obs last
     * be careful not to change the sort order
     * note that touse is coded -1/0 rather than 1/0!
-
-    sort `touse' `by'
+    qui count if `touse'
+    local samplesize=r(N)
+    local touse_first=_N-`samplesize'+1
+    local touse_last=_N
 
     if `:word count `by''>1{
         tempvar byv
-        by `touse' `by': gen `byv' = _n == 1 
+        bys `touse' `by': gen `byv' = _n == 1 
         qui replace `byv' = sum(`byv')
         local bytype str20
         label var `byv' `lab'
     }
     else{
+        if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'") sort `touse' `by'
         local byv `by'
         local bytype : type `by'
     }
 
 
     /* code from binscatter */
-    qui count if `touse'
-    local samplesize=r(N)
-    local touse_first=_N-`samplesize'+1
-    local touse_last=_N
+
     cap confirm numeric variable `byv'
     if _rc{
         mata: scharacterize_unique_vals_sorted("`byv'",`touse_first',`touse_last', 100)

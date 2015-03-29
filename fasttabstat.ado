@@ -170,14 +170,15 @@ program define fasttabstat, rclass byable(recall) sort
 
 		* the data are sorted on by groups, putting unused obs last
 		* be careful not to change the sort order
-
-		sort `touse' `by'
-
-		/* code from binscatter */
 		qui count if `touse'
 		local samplesize=r(N)
 		local touse_first=_N-`samplesize'+1
 		local touse_last=_N
+
+		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'") sort `touse' `by'
+
+		/* code from binscatter */
+
 		local bytype : type `by'
 		mata: characterize_unique_vals_sorted("`by'",`touse_first',`touse_last', 100)
 		local nby = r(r)
