@@ -176,8 +176,8 @@ program define fasttabstat, rclass byable(recall) sort
 		local touse_last=_N
 		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")	local stouse `touse'
 		tempvar byover
-		by `stouse' `by' : gen `byover' = _N if _n==1 
-
+		bys `stouse' `by' : gen `byover' = _N if _n==1 
+		local bytype : type `by'
 		local iby = 0
 		scalar start = `touse_first'
 		while `=start' < `touse_last'{
@@ -187,18 +187,18 @@ program define fasttabstat, rclass byable(recall) sort
 			mat `Stat`iby'' = J(`nstats',`nvars',0)
 			mat colnames `Stat`iby'' = `varlist'
 			mat rownames `Stat`iby'' = `stats'
-			local byval  `=`by'[`start']'
+			local byval  `=`by'[`=start']'
 			*loop over all variables
 			forvalues i = 1/`nvars' {
 				if regexm("`cmd'", "sum") {
-					qui summ `var`i'' in `start'/`end' `wght', `summopt'
+					qui summ `var`i'' in `=start'/`=end' `wght', `summopt'
 					forvalues is = 1/`nstats' {
 						if "`cmd`is''" == "sum"{
 							if "`name`is''"== "freq"{
-								mat `Stat`iby''[`is',`i'] = `end' - `start' +1
+								mat `Stat`iby''[`is',`i'] = `=end' - `=start' +1
 							}
 							else if  "`name`is''"== "nmissing"{
-								mat `Stat`iby''[`is',`i'] = `end' - `start' + 1 - `expr`is''
+								mat `Stat`iby''[`is',`i'] = `=end' - `=start' + 1 - `expr`is''
 							}
 							else{
 								mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -207,7 +207,7 @@ program define fasttabstat, rclass byable(recall) sort
 					}
 				}
 				if "`pctileopt'" ~= ""{
-					qui _pctile `var`i'' in `start'/`end' `wght', p(`pctileopt')
+					qui _pctile `var`i'' in `=start'/`=end' `wght', p(`pctileopt')
 					forvalues is = 1/`nstats' {
 						if "`cmd`is''" == "pctile"{
 							mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -231,6 +231,7 @@ program define fasttabstat, rclass byable(recall) sort
 			}
 			scalar start = `=end' + 1
 		}
+		local nby `iby'
 	}
 	else {
 		local nby 0

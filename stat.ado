@@ -189,13 +189,25 @@ if "`by'" != "" {
 
     if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")  local stouse `touse'
     tempvar byover
-    by `stouse' `by' : gen `byover' = _N if _n==1 
+    bys `stouse' `by' : gen `byover' = _N if _n==1 
 
+
+    local byn : word count `by'
+    if `byn'>1{
+        local bytype : type str20
+        local for ""
+    }
+    else{
+        local bytype: type `by'
+        local for : format `by'
+    }
 
     /* get back to original */
     local iby = 0
-   scalar start = `touse_first'
-   while `=start' < `touse_last'{
+    scalar start = `touse_first'
+    local maxlength 0
+    while `=start' < `touse_last'{
+        scalar end = `=start' + `=`byover'[`=start']' - 1
         local iby = `iby' + 1
         tempname Stat`iby'
         mat `Stat`iby'' = J(`nstats',`nvars',0)
@@ -203,20 +215,20 @@ if "`by'" != "" {
         mat rownames `Stat`iby'' = `stats'
         local byval ""
         foreach b in `by' {
-            local byval `byval' `=`b'[`=start']'
+            local byval `byval' `: label (`b') `=`b'[`=start']''
         }
 
         * loop over all variables
         forvalues i = 1/`nvars' {
             if regexm("`cmd'", "sum") {
-                qui summ `var`i'' in `start'/`end' `wght', `summopt'
+                qui summ `var`i'' in `=start'/`=end' `wght', `summopt'
                 forvalues is = 1/`nstats' {
                     if "`cmd`is''" == "sum"{
                         if "`name`is''"== "freq"{
-                            mat `Stat`iby''[`is',`i'] = `end' - `start' +1
+                            mat `Stat`iby''[`is',`i'] = `=end' - `=start' +1
                         }
                         else if  "`name`is''"== "nmissing"{
-                            mat `Stat`iby''[`is',`i'] = `end' - `start' + 1 - `expr`is''
+                            mat `Stat`iby''[`is',`i'] = `=end' - `=start' + 1 - `expr`is''
                         }
                         else{
                             mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -225,7 +237,7 @@ if "`by'" != "" {
                 }
             }
             if "`pctileopt'" ~= ""{
-                qui _pctile `var`i'' in `start'/`end' `wght', p(`pctileopt')
+                qui _pctile `var`i'' in `=start'/`=end' `wght', p(`pctileopt')
                 forvalues is = 1/`nstats' {
                     if "`cmd`is''" == "pctile"{
                         mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -238,18 +250,11 @@ if "`by'" != "" {
 
 
         * save label for groups in lab1, lab2 etc
-        if substr("`bytype'",1,3) != "str" {
-            local lab`iby' : label (`byv') `byval'
-        }
-        else {
-            /* 32 = max value of `labelwidth'               */
-            /* We record c(maxvallablen) because of r()     */
-            /* We use -display- to expand char(0) to \0     */
-            local lab`iby' : di (substr(`"`byval'"', 1, c(maxvlabellen)))
-        }
-    scalar start = `=end' + 1
-
+        local lab`iby' `byval'
+        local maxlength `=max(strlen(`"`byval'"'),`maxlength')'
+        scalar start = `=end' + 1
     }
+    local nby `iby'
 }
 else {
     local nby 0
@@ -297,23 +302,14 @@ if "`nototal'" == "" {
 * constants for displaying results
 * --------------------------------
 
-if "`byv'" != "" {
+if "`by'" != "" {
     if substr("`bytype'",1,3) != "str" {
-        local lv : value label `byv'
-        if "`lv'" != "" {
-            local lg : label (`byv') maxlength
-            local byw = min(`labelwidth',`lg')
-        }
-        else {
-            /* okay for strLs */
-            local byw 8
-        }
+        local byw = min(`labelwidth',`maxlength')
     }
     else {
         local byw=min(real(substr("`bytype'",4,.)),`labelwidth')
         local bytype str
     }
-    capture local for : format `byv'
     capture local if_date_for = substr("`for'", index("`for'", "%"), index("`for'", "d"))
     capture local if_time_for = substr("`for'", index("`for'", "%"), index("`for'", "t"))
     if "`if_date_for'" == "%d" | "`if_time_for'" == "%t" {
@@ -347,11 +343,11 @@ local ndigit  9
 local colwidth = `ndigit'+1
 
 if "`incol'" == "statistics" {
-    local lleft = (1 + `byw')*("`byv'"!="") + ///
+    local lleft = (1 + `byw')*("`by'"!="") + ///
     (`varwidth'+1)*("`descr'"!="")
 }
 else {
-    local lleft = (1 + `byw')*("`byv'"!="") + (8+1)*("`descr'"!="")
+    local lleft = (1 + `byw')*("`by'"!="") + (8+1)*("`descr'"!="")
 }
 local cbar  = `lleft' + 1
 
@@ -391,7 +387,7 @@ else{
 }
 
 
-if "`descr'" != "" & "`byv'" != "" {
+if "`descr'" != "" & "`by'" != "" {
     local byalign lalign
 }
 else {
@@ -427,7 +423,7 @@ if "`incol'" == "statistics" {
         local is2 = `is2`isblock''
 
         * display header
-        if "`byv'" != "" {
+        if "`by'" != "" {
             local byname = abbrev("`by'",`byw')
         di as txt "{`byalign' `byw':`byname'} {...}"
         }
@@ -445,16 +441,15 @@ if "`incol'" == "statistics" {
         local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
             forvalues i = 1/`nvars' {
-                if "`byv'" != "" {
+                if "`by'" != "" {
                     if `i' == 1 {
                         local lab = substr(`"`lab`iby''"', 1,`byw')
                         if `"`lab'"' != "Total" {
-                            capture local val_lab : value label `byv'
+                            local val_lab `by'
                             if "`val_lab'" == "" {
-                                local type : type `byv'
+                                local type `bytype'
                                 local yes_str = index("`type'", "str")
                                 if `yes_str' == 0 {
-                                    capture local for : format `byv'
                                     capture local if_date_for = index("`for'", "%d")
                                     capture local if_time_for = index("`for'", "%t")
                                     if `if_date_for' > 0 | `if_time_for' > 0 {
@@ -513,12 +508,8 @@ else {
 
     if "`descr'" == "" {
         di as txt _n `"Summary statistics:`names'"'
-        if "`byv'" != "" {
-            local bylabel : var label `byv'
-            if `"`bylabel'"' != "" {
-                local bylabel `"(`bylabel')"'
-            }
-            di as txt `"  by categories of: `byv' `bylabel'"'
+        if "`by'" != "" {
+            di as txt `"  by categories of: `by' "'
         }
     }
     di
@@ -533,8 +524,8 @@ else {
         local i2 = `i2`iblock''
 
         * display header
-        if "`byv'" != "" {
-        di as txt "{`byalign' `byw':`byv'} {...}"
+        if "`by'" != "" {
+        di as txt "{`byalign' `byw':`by'} {...}"
         }
         if "`descr'" != "" {
         di as txt "   stats {...}"
@@ -551,7 +542,7 @@ else {
         local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
             forvalues is = 1/`nstats' {
-                if "`byv'" != "" {
+                if "`by'" != "" {
                     if `is' == 1 {
                         local lab = substr(`"`lab`iby''"', 1, `byw')
                     di as txt `"{`byalign' `byw':`lab'} {...}"'
@@ -589,7 +580,7 @@ else {
 * ---------------------------------------
 
 
-if "`byv'" == ""{
+if "`by'" == ""{
     local iby `=`nby' + 1'
     foreach is of numlist 1/`nstats'{
         local localname  "`name`is''"
