@@ -14,7 +14,7 @@ The command `stat` is a wrapper for `fastabstat`, with a syntax closer to `summa
 - `stat` works with groups defined by multiple variables
 
 
-### One can use `stat` as a way to `summarize` observations by group
+### `stat` can be used to `summarize` observations by group
 ```
 sysuse nlsw88.dta, clear
 stat hours, by(race) 
@@ -27,7 +27,7 @@ stat hours, by(race married) detail
 ![](img/sum3.jpg)
 
 
-### One can use `stat` as a way to `tabulate` groups defined by multiple variables
+### `stat` can be used to `tabulate` groups defined by multiple variables
 
 ```
 stat hours, by(race married) s(m)
@@ -35,7 +35,7 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
-### One can use `stat` as a way to `collapse` in an external dataset
+### `stat`can be used to `collapse` in an external dataset
 
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
