@@ -175,13 +175,13 @@ program define fasttabstat, rclass byable(recall) sort
 		local touse_first=_N-`samplesize'+1
 		local touse_last=_N
 		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")	local stouse `touse'
-		tempvar byover
-		bys `stouse' `by' : gen `byover' = _N if _n==1 
+		tempvar bylength
+		bys `stouse' `by' : gen `bylength' = _N if _n==1 
 		local bytype : type `by'
 		local iby = 0
 		scalar start = `touse_first'
 		while `=start' < `touse_last'{
-			scalar end = `=start' + `=`byover'[`=start']' - 1
+			scalar end = `=start' + `=`bylength'[`=start']' - 1
 			local iby = `iby' + 1
 			tempname Stat`iby'
 			mat `Stat`iby'' = J(`nstats',`nvars',0)

@@ -188,8 +188,8 @@ if "`by'" != "" {
     local touse_last=_N
 
     if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")  local stouse `touse'
-    tempvar byover
-    bys `stouse' `by' : gen `byover' = _N if _n==1 
+    tempvar bylength
+    bys `stouse' `by' : gen `bylength' = _N 
 
 
     local byn : word count `by'
@@ -207,7 +207,7 @@ if "`by'" != "" {
     scalar start = `touse_first'
     local maxlength 0
     while `=start' < `touse_last'{
-        scalar end = `=start' + `=`byover'[`=start']' - 1
+        scalar end = `=start' + `=`bylength'[`=start']' - 1
         local iby = `iby' + 1
         tempname Stat`iby'
         mat `Stat`iby'' = J(`nstats',`nvars',0)
