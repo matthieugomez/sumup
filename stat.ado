@@ -15,10 +15,10 @@ if "`stats'" ~= ""{
 
 if "`statistics'" == ""{		
     if "`detail'" == ""{
-        local statistics  n nmissing mean sd min max
+        local statistics  n missing mean sd min max
     }
     else{
-        local statistics n nmissing mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
+        local statistics n missing mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
         local seps 6 12
         local columns statistics
     }
@@ -130,6 +130,9 @@ forvalues i = 1/`nvars' {
         local fmt`i' %9.0g
     }
 }
+
+
+
 if `nvars' == 1 & `"`columns'"' == "" {
     local incol statistics
 }
@@ -238,8 +241,8 @@ if "`by'" != "" {
                         if "`name`is''"== "freq"{
                             mat `Stat`iby''[`is',`i'] = `=end' - `=start' +1
                         }
-                        else if  "`name`is''"== "nmissing"{
-                            mat `Stat`iby''[`is',`i'] = `=end' - `=start' + 1 - `expr`is''
+                        else if  "`name`is''"== "missing"{
+                            mat `Stat`iby''[`is',`i'] = 100 * (`=end' - `=start' + 1 - `expr`is'')/(`=end' - `=start' + 1)
                         }
                         else{
                             mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -288,7 +291,7 @@ if "`nototal'" == "" {
                     if "`name`is''"== "freq"{
                         mat `Stat`iby''[`is',`i'] = _N
                     }
-                    else if  "`name`is''"== "nmissing"{
+                    else if  "`name`is''"== "missing"{
                         mat `Stat`iby''[`is',`i'] = _N - `expr`is''
                     }
                     else{
@@ -496,8 +499,14 @@ if "`incol'" == "statistics" {
                 }
             di as txt "{c |}{...}"
                 forvalues is = `is1'/`is2' {
-                    local s : display `fmt`i'' `Stat`iby''[`is',`i']
-                    di as res %`colwidth's "`s'" _c
+                    if "`name`is''" == "missing"{
+                        local s : display %4.0g `Stat`iby''[`is',`i'] 
+                        di as res %`colwidth's "`s'%" _c
+                    }
+                    else{
+                        local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                        di as res %`colwidth's "`s'" _c
+                    }
                 }
                 di
             }
@@ -568,8 +577,14 @@ else {
                 }
             di as txt "{c |}{...}"
                 forvalues i = `i1'/`i2' {
-                    local s : display `fmt`i'' `Stat`iby''[`is',`i']
-                    di as res %`colwidth's "`s'" _c
+                    if "`name`is''" == "missing"{
+                        local s : display %4.0g `Stat`iby''[`is',`i'] 
+                        di as res %`colwidth's "`s'%" _c
+                    }
+                    else{
+                        local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                        di as res %`colwidth's "`s'" _c
+                    }
                 }
                 di
             }
@@ -645,7 +660,7 @@ program define Stats2, rclass
     foreach st of local opt {
         local 0 = lower(`", `st'"')
 
-        capt syntax [, n freq nmissing MEan sd Variance SUm COunt MIn MAx Range SKewness Kurtosis /*
+        capt syntax [, n freq missing MEan sd Variance SUm COunt MIn MAx Range SKewness Kurtosis /*
         */  SDMean SEMean p1 p5 p10 p25 p50 p75 p90 p95 p99 iqr q MEDian CV *]
         if _rc {
             di in err `"unknown statistic: `st'"'
@@ -693,8 +708,8 @@ program define Stats2, rclass
             continue
         }
 
-        if "`nmissing'" != "" {
-            local names "`names' nmissing"
+        if "`missing'" != "" {
+            local names "`names' missing"
             local titlenames `"`titlenames' Missing"'
             local expr  "`expr' r(N)"
             local class = max(`class',1)
