@@ -1,6 +1,6 @@
 program stat, rclass 
 version 12.1
-syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varlist) Statistics(str)  missing seps(numlist) /*
+syntax varlist [if] [in] [aweight fweight pweight] [, Detail by(varlist) Output(str) replace Statistics(str)  missing seps(numlist) /*
 */     CASEwise Columns(str) Format Format2(str) /*
 */      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
 */      SAME SAVE noSEParator noTotal septable(string)]
@@ -15,10 +15,10 @@ if "`stats'" ~= ""{
 
 if "`statistics'" == ""{		
     if "`detail'" == ""{
-        local statistics  n missing mean sd min max
+        local statistics  n missing  mean sd min max 
     }
     else{
-        local statistics n missing mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
+        local statistics n missing  mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
         local seps 6 12
         local columns statistics
     }
@@ -126,7 +126,10 @@ forvalues i = 1/`nvars' {
     else if `"`format2'"' != "" {
         local fmt`i' `format2'
     }
-    else {
+    else if "`name`i''" == "missing"{
+        local fmt`i' %6.0g
+    }
+    else{
         local fmt`i' %9.0g
     }
 }
@@ -187,6 +190,38 @@ if `matsize' < `matreq' {
     exit 908
 }
 
+if "`output'" ~= ""{
+    if !regexm("`output'", "dta"){
+        local output `output'.dta
+    }
+
+    cap confirm new file `"`output'"'
+    if _rc ~= 0 & "`replace'" == ""{
+        di as error  `"file `output' already exists. Specify option replace"'
+        exit
+    }
+    else{
+        tempfile outputname
+        tempname postname
+        foreach b in `by' {
+            local postvars `postvars' `b'
+        }
+
+        if `nvars' == 1{
+            forvalues is = 1/`nstats'{
+                local postvars `postvars' `name`is''
+            }
+        }
+        else{
+            forvalues i = 1/`nvars' {
+                forvalues is = 1/`nstats'{
+                    local postvars `postvars' `var`i''_`name`is''
+                }
+            }
+        }
+        qui postfile `postname' `postvars' using `outputname'
+    }
+}
 * compute the statistics
 * ----------------------
 
@@ -242,7 +277,7 @@ if "`by'" != "" {
                             mat `Stat`iby''[`is',`i'] = `=end' - `=start' +1
                         }
                         else if  "`name`is''"== "missing"{
-                            mat `Stat`iby''[`is',`i'] = 100 * (`=end' - `=start' + 1 - `expr`is'')/(`=end' - `=start' + 1)
+                            mat `Stat`iby''[`is',`i'] = `=end' - `=start' + 1 - `expr`is''
                         }
                         else{
                             mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -266,7 +301,23 @@ if "`by'" != "" {
         * save label for groups in lab1, lab2 etc
         local lab`iby' `byval'
         local maxlength `=max(strlen(`"`byval'"'),`maxlength')'
+
+
+        if "`output'"~=""{
+            local bypost ""
+            foreach b in `by'{
+                local bypost `bypost' (`=`b'[`=start']')
+            }
+            local statpost ""
+            forvalues i = 1/`nvars' {
+                forvalues is = 1/`nstats'{
+                    local statpost `statpost' (`=`Stat`iby''[`is',`i']')
+                }
+            }
+            post `postname' `bypost' `statpost'
+        }
         scalar start = `=end' + 1
+
     }
     local nby `iby'
 }
@@ -312,6 +363,11 @@ if "`nototal'" == "" {
     local lab`iby' "Total"
 }
 
+if "`output'"~= ""{
+    postclose `postname'
+    copy `outputname' `output', `replace'
+    display "file `output' written"
+}
 
 * constants for displaying results
 * --------------------------------
@@ -499,9 +555,12 @@ if "`incol'" == "statistics" {
                 }
             di as txt "{c |}{...}"
                 forvalues is = `is1'/`is2' {
-                    if "`name`is''" == "missing"{
-                        local s : display %4.0g `Stat`iby''[`is',`i'] 
-                        di as res %`colwidth's "`s'%" _c
+                    if "`name`is''" == "missing" & "`name`=`is'-1''" == "N"{
+                        local s1 : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                        local s2 : display %4.0f `Stat`iby''[`is',`i']/(`Stat`iby''[1,`i']+`Stat`iby''[`=`is'-1',`i'])
+                        local s1 `=trim("`s1'")'
+                        local s2 `=trim("`s2'")'
+                        di as res %`colwidth's "`s1' (`s2'%)" _c
                     }
                     else{
                         local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
@@ -577,29 +636,32 @@ else {
                 }
             di as txt "{c |}{...}"
                 forvalues i = `i1'/`i2' {
-                    if "`name`is''" == "missing"{
-                        local s : display %4.0g `Stat`iby''[`is',`i'] 
-                        di as res %`colwidth's "`s'%" _c
-                    }
-                    else{
-                        local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
-                        di as res %`colwidth's "`s'" _c
-                    }
-                }
-                di
+                 if "`name`is''" == "missing" & "`name`=`is'-1''" == "N"{
+                  local s1 : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                  local s2 : display %4.0f `Stat`iby''[`is',`i']/(`Stat`iby''[1,`i']+`Stat`iby''[`=`is'-1',`i'])
+                  local s1 `=trim("`s1'")'
+                  local s2 `=trim("`s2'")'
+                  di as res %`colwidth's "`s1' (`s2'%)" _c
+              }
+              else{
+                local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                di as res %`colwidth's "`s'" _c
             }
-            if (`iby' >= `nbyt') {
-            di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
-            }
-            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
-            di as txt "{hline `lleft'}{c +}{hline `ndash'}"
-            }
-        } /* forvalues iby */
-
-        if `iblock' < `nvblock' {
-            display
         }
-    } /* forvalues iblock */
+        di
+    }
+    if (`iby' >= `nbyt') {
+    di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
+    }
+    else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
+    di as txt "{hline `lleft'}{c +}{hline `ndash'}"
+    }
+} /* forvalues iby */
+
+if `iblock' < `nvblock' {
+    display
+}
+} /* forvalues iblock */
 }
 
 * save results (mainly for certification)
