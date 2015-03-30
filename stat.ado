@@ -15,11 +15,11 @@ if "`stats'" ~= ""{
 
 if "`statistics'" == ""{		
     if "`detail'" == ""{
-        local statistics  n mean sd min max
+        local statistics  n nmissing mean sd min max
     }
     else{
-        local statistics n mean sd skewness kurtosis min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
-        local seps 5 11
+        local statistics n nmissing mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
+        local seps 6 12
         local columns statistics
     }
 }    
@@ -138,6 +138,7 @@ if `nvars' == 1 & `"`columns'"' == "" {
 
 Stats2 `statistics'
 local stats   `r(names)'
+local titlestats   `r(titlenames)'
 local expr    `r(expr)'
 local cmd    `r(cmd)'
 local summopt `r(summopt)'
@@ -160,6 +161,16 @@ forvalues i = 1/`nstats' {
         local names "`names',"
     }
 }
+tokenize `titlestats'
+forvalues i = 1/`nstats' {
+    local titlename`i' ``i''
+    local titlenames "`titlenames' ``i''"
+    if `i' < `nstats' {
+        local titlenames "`titlenames',"
+    }
+}
+
+
 if "`separator'" == "" & ( (`nstats' > 1 & "`incol'" == "variables") /*
     */         |(`nvars' > 1  & "`incol'" == "statistics")) {
     local sepline yes
@@ -194,7 +205,7 @@ if "`by'" != "" {
 
     local byn : word count `by'
     if `byn'>1{
-        local bytype : type str20
+        local bytype str20
         local for ""
     }
     else{
@@ -432,7 +443,7 @@ if "`incol'" == "statistics" {
         }
     di as txt "{c |}" _c
         forvalues is = `is1'/`is2' {
-            di as txt %`colwidth's "`name`is''" _c
+            di as txt %`colwidth's "`titlename`is''" _c
         }
         local ndash = `colwidth'*(`is2'-`is1'+1)
     di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
@@ -553,7 +564,7 @@ else {
                 }
                 if "`descr'" != "" {
                     * names of statistics are at most 8 chars
-                di as txt `"{ralign 8:`name`is''} {...}"'
+                di as txt `"{ralign 8:`titlename`is''} {...}"'
                 }
             di as txt "{c |}{...}"
                 forvalues i = `i1'/`i2' {
@@ -647,12 +658,18 @@ program define Stats2, rclass
         * class 1 : available via -summarize, meanonly-
 
         * summarize.r(N) returns #obs (note capitalization)
-        if "`n'" != "" {
-            local n N
-        }
         local s "`n'`min'`mean'`max'`sum'"
+
         if "`s'" != "" {
+            if "`n'" != "" {
+                local s N
+                local titlename Obs
+            }
+            else{
+                local titlename `=strproper("`s'")'
+            }
             local names "`names' `s'"
+            local titlenames `"`titlenames' `titlename'"'
             local expr  "`expr' r(`s')"
             local class = max(`class',1)
             local cmd "`cmd' sum"
@@ -660,6 +677,7 @@ program define Stats2, rclass
         }
         if "`range'" != "" {
             local names "`names' range"
+            local titlenames `"`titlenames' `s'"'
             local expr  "`expr' r(max)-r(min)"
             local class = max(`class',1)
             local cmd "`cmd' sum"
@@ -668,6 +686,7 @@ program define Stats2, rclass
 
         if "`freq'" != "" {
             local names "`names' freq"
+            local titlenames `"`titlenames' `s'"'
             local expr  "`expr' r(N)"
             local class = max(`class',1)
             local cmd "`cmd' sum"
@@ -676,6 +695,7 @@ program define Stats2, rclass
 
         if "`nmissing'" != "" {
             local names "`names' nmissing"
+            local titlenames `"`titlenames' Missing"'
             local expr  "`expr' r(N)"
             local class = max(`class',1)
             local cmd "`cmd' sum"
@@ -687,6 +707,7 @@ program define Stats2, rclass
 
         if "`sd'" != "" {
             local names "`names' sd"
+            local titlenames `"`titlenames' "Std. Dev.""'
             local expr  "`expr' r(sd)"
             local class = max(`class',2)
             local cmd "`cmd' sum"
@@ -694,6 +715,7 @@ program define Stats2, rclass
         }
         if "`sdmean'" != "" | "`semean'"!="" {
             local names "`names' se(mean)"
+            local titlenames `"`titlenames' se(mean)"'
             local expr  "`expr' r(sd)/sqrt(r(N))"
             local class = max(`class',2)
             local cmd "`cmd' sum"
@@ -701,6 +723,7 @@ program define Stats2, rclass
         }
         if "`variance'" != "" {
             local names "`names' variance"
+            local titlenames `"`titlenames' `s'"'
             local expr  "`expr' r(Var)"
             local class = max(`class',2)
             local cmd "`cmd' sum"
@@ -708,6 +731,7 @@ program define Stats2, rclass
         }
         if "`cv'" != "" {
             local names "`names' cv"
+            local titlenames `"`titlenames' cv"'
             local expr  "`expr' (r(sd)/r(mean))"
             local class = max(`class',2)
             local cmd "`cmd' sum"
@@ -718,7 +742,14 @@ program define Stats2, rclass
 
         local s "`skewness'`kurtosis'`p1'`p5'`p10'`p25'`p50'`p75'`p90'`p95'`p99'"
         if "`s'" != "" {
+            if inlist("`s'", "skewness", "kurtosis"){
+                local titlename `=strproper("`s'")'
+            }
+            else{
+                local titlename `s'
+            }
             local names "`names' `s'"
+            local titlenames `"`titlenames' `titlename'"'
             local expr  "`expr' r(`s')"
             local class = max(`class',3)
             local cmd "`cmd' sum"
@@ -726,6 +757,7 @@ program define Stats2, rclass
         }
         if "`iqr'" != "" {
             local names "`names' iqr"
+            local titlenames `"`titlenames' iqr"'
             local expr  "`expr' r(p75)-r(p25)"
             local class = max(`class',3)
             local cmd "`cmd' sum"
@@ -733,6 +765,7 @@ program define Stats2, rclass
         }
         if "`q'" != "" {
             local names "`names' p25 p50 p75"
+            local titlenames `"`titlenames' p25 p50 p75"'
             local expr  "`expr' r(p25) r(p50) r(p75)"
             local class = max(`class',3)
             local cmd "`cmd' sum"
@@ -743,6 +776,7 @@ program define Stats2, rclass
             local quantile `=regexr("`options'", "p", "")'
             local nq = `nq' + 1
             local names "`names' `options'"
+            local titlenames `"`titlenames' `options'"'
             local expr "`expr' r(r`nq')"
             local pctileopt "`pctileopt' `quantile'"
             local cmd "`cmd' pctile"
@@ -759,6 +793,8 @@ program define Stats2, rclass
         local summopt "detail"
     }
     return local names `names'
+    return local titlenames `titlenames'
+
     return local expr  `expr'
     return local cmd  `cmd'
     return local summopt `summopt'

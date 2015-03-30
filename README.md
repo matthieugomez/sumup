@@ -1,7 +1,7 @@
 # fasttabstat
 
 The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has exactly the same syntax than `tabstat`, with two advantages:
-- `fasttabstat`  is 10x faster than `tabstat`. `fasttabstat` is also twice as fast as `tabulate, summarize()`, while allowing for more statistics than the mean.
+- `fasttabstat`  is 10x faster than `tabstat`. `fasttabstat` is faster than `tabulate, summarize()`.
 - `fasttabstat` accepts more statistics than `tabstat` : 
 	- any percentile 
 	- `nmissing` : number of missing observations.
@@ -11,6 +11,7 @@ The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has e
 The command `stat` is a wrapper for `fastabstat`, with a syntax closer to `summarize`:
 -  By default, the same statistics than `summarize` & the option `detail` is allowed.
 - `stat` returns a list of scalar of the form `r(statname_byvalue)` instead of matrices
+- `stat` accepts grouped defined by multiple variables
 
 
 Examples:
@@ -25,6 +26,13 @@ sysuse nlsw88.dta, clear
 stat hours, by(race) s(mean sd skewness p94)
 ```
 ![](img/sum2.jpg)
+
+```
+sysuse nlsw88.dta, clear
+stat hours, by(race) detail
+```
+![](img/sum2.jpg)
+
 
 
 # List of statistics
