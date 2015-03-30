@@ -35,11 +35,11 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
-One can also use `stat` as faster way to `collapse` 
+One can also use `stat` as a way to `collapse` in an external dataset
 
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
-use temp.dta, clear s(mean sum)
+describe using temp.dta
 ```
 ![](img/sum5.jpg)
 
