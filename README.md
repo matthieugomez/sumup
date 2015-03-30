@@ -11,10 +11,10 @@ The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has e
 The command `stat` is a wrapper for `fastabstat`, with a syntax closer to `summarize`:
 -  By default, the same statistics than `summarize` & the option `detail` is allowed.
 - `stat` returns a list of scalar of the form `r(statname_byvalue)` instead of matrices
-- `stat` accepts grouped defined by multiple variables
+- `stat` works with groups defined by multiple variables
 
 
-Examples:
+One can use `stat` as a better `sum`:
 ```
 sysuse nlsw88.dta, clear
 stat hours, by(race) 
@@ -22,17 +22,17 @@ stat hours, by(race)
 ![](img/sum.jpg)
 
 ```
-sysuse nlsw88.dta, clear
-stat hours, by(race) s(mean sd skewness p94)
-```
-![](img/sum2.jpg)
-
-```
-sysuse nlsw88.dta, clear
 stat hours, by(race married) detail
 ```
 ![](img/sum3.jpg)
 
+
+One can also use `stat` as a way to `tabulate` groups defined by multiple variables
+
+```
+stat hours, by(race married) s(m)
+```
+![](img/sum4.jpg)
 
 
 # List of statistics
