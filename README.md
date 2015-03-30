@@ -1,7 +1,7 @@
 # fasttabstat
 
-The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has exactly the same syntax than `tabstat`, with two advantages:
-- `fasttabstat`  is 10x faster than `tabstat`. `fasttabstat` is faster than `tabulate, summarize()`.
+The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
+- `fasttabstat`  is 10x faster than `tabstat`.
 - `fasttabstat` accepts more statistics than `tabstat` : 
 	- any percentile 
 	- `nmissing` : number of missing observations.
@@ -9,7 +9,7 @@ The command `fasttabstat` is an better version of `tabstat`. `fasttabstat` has e
 
 # stat
 The command `stat` is a wrapper for `fastabstat`, with a syntax closer to `summarize`:
--  By default, the same statistics than `summarize` & the option `detail` is allowed.
+-  By default, the same statistics than `summarize` ; the option `detail` is allowed.
 - `stat` returns a list of scalar of the form `r(statname_byvalue)` instead of matrices
 - `stat` works with groups defined by multiple variables
 
@@ -27,7 +27,7 @@ stat hours, by(race married) detail
 ![](img/sum3.jpg)
 
 
-### `stat` can be used to `tabulate` groups defined by multiple variables
+### `stat` can also be used to `tabulate`  by multiple variables
 
 ```
 stat hours, by(race married) s(m)
@@ -35,7 +35,7 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
-### `stat`can be used to `collapse` in an external dataset
+### `stat`can also be used to `collapse` to an external dataset
 
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
