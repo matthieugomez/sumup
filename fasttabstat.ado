@@ -170,43 +170,35 @@ program define fasttabstat, rclass byable(recall) sort
 
 		* the data are sorted on by groups, putting unused obs last
 		* be careful not to change the sort order
-		qui count if `touse'
+		count if `touse'
 		local samplesize=r(N)
 		local touse_first=_N-`samplesize'+1
 		local touse_last=_N
+		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")	local stouse `touse'
+		tempvar byover
+		by `stouse' `by' : gen `byover' = _N if _n==1 
 
-		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'") sort `touse' `by'
-
-		/* code from binscatter */
-
-		local bytype : type `by'
-		mata: characterize_unique_vals_sorted("`by'",`touse_first',`touse_last', 100)
-		local nby = r(r)
-		tempname by_boundaries by_values
-		matrix `by_boundaries'=r(boundaries)        
-		matrix `by_values'=r(values)
-
-		/* get back to original */
-		forvalues iby = 1/`nby' {
+		local iby = 0
+		scalar start = `touse_first'
+		while `=start' < `touse_last'{
+			scalar end = `=start' + `=`byover'[`=start']' - 1
+			local iby = `iby' + 1
 			tempname Stat`iby'
 			mat `Stat`iby'' = J(`nstats',`nvars',0)
 			mat colnames `Stat`iby'' = `varlist'
 			mat rownames `Stat`iby'' = `stats'
-			local byval  `=`by_values'[`iby', 1]'
-			local by1 `=`by_boundaries'[`iby',1]'
-			local by2 `=`by_boundaries'[`iby',2]' 
-
+			local byval  `=`by'[`start']'
 			*loop over all variables
 			forvalues i = 1/`nvars' {
 				if regexm("`cmd'", "sum") {
-					qui summ `var`i'' in `by1'/`by2' `wght', `summopt'
+					qui summ `var`i'' in `start'/`end' `wght', `summopt'
 					forvalues is = 1/`nstats' {
 						if "`cmd`is''" == "sum"{
 							if "`name`is''"== "freq"{
-								mat `Stat`iby''[`is',`i'] = `by2' - `by1' +1
+								mat `Stat`iby''[`is',`i'] = `end' - `start' +1
 							}
 							else if  "`name`is''"== "nmissing"{
-								mat `Stat`iby''[`is',`i'] = `by2' - `by1' + 1 - `expr`is''
+								mat `Stat`iby''[`is',`i'] = `end' - `start' + 1 - `expr`is''
 							}
 							else{
 								mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -215,7 +207,7 @@ program define fasttabstat, rclass byable(recall) sort
 					}
 				}
 				if "`pctileopt'" ~= ""{
-					qui _pctile `var`i'' in `by1'/`by2' `wght', p(`pctileopt')
+					qui _pctile `var`i'' in `start'/`end' `wght', p(`pctileopt')
 					forvalues is = 1/`nstats' {
 						if "`cmd`is''" == "pctile"{
 							mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -237,6 +229,7 @@ program define fasttabstat, rclass byable(recall) sort
 				/* We use -display- to expand char(0) to \0     */
 				local lab`iby' : di (substr(`byval', 1, c(maxvlabellen)))
 			}
+			scalar start = `=end' + 1
 		}
 	}
 	else {
@@ -734,67 +727,3 @@ program define Stats2, rclass
 end
 
 
-/***************************************************************************************************
-Helper function from binscatter (no change)
-***************************************************************************************************/
-set matastrict on
-
-mata:
-
-	void characterize_unique_vals_sorted(string scalar var, real scalar first, real scalar last, real scalar maxuq) {
-		// Inputs: a numeric variable, a starting & ending obs #, and a maximum number of unique values
-		// Requires: the data to be sorted on the specified variable within the observation boundaries given
-		//              (no check is made that this requirement is satisfied)
-		// Returns: the number of unique values found
-		//          the unique values found
-		//          the observation boundaries of each unique value in the dataset
-
-
-		// initialize returned results
-		real scalar Nunique
-		Nunique=0
-
-		real matrix values
-		values=J(maxuq,1,.)
-
-		real matrix boundaries
-		boundaries=J(maxuq,2,.)
-
-		// initialize computations
-		real scalar var_index
-		var_index=st_varindex(var)
-
-		real scalar curvalue
-		real scalar prevvalue
-
-		// perform computations
-		real scalar obs
-		for (obs=first; obs<=last; obs++) {
-			curvalue=_st_data(obs,var_index)
-
-			if (curvalue!=prevvalue) {
-				Nunique++
-				if (Nunique<=maxuq) {
-					prevvalue=curvalue
-					values[Nunique,1]=curvalue
-					boundaries[Nunique,1]=obs
-					if (Nunique>1) boundaries[Nunique-1,2]=obs-1
-				}
-				else {
-					exit(error(134))
-				}
-
-			}
-		}
-		boundaries[Nunique,2]=last
-
-		// return results
-		stata("return clear")
-
-		st_numscalar("r(r)",Nunique)
-		st_matrix("r(values)",values[1..Nunique,.])
-		st_matrix("r(boundaries)",boundaries[1..Nunique,.])
-
-	}
-
-end
