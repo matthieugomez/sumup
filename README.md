@@ -29,9 +29,9 @@ stat hours, by(race) s(mean sd skewness p94)
 
 ```
 sysuse nlsw88.dta, clear
-stat hours, by(race) detail
+stat hours, by(race married) detail
 ```
-![](img/sum2.jpg)
+![](img/sum3.jpg)
 
 
 
