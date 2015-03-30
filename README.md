@@ -35,6 +35,14 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
+One can also use `stat` as faster way to `collapse` 
+
+```
+stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
+use temp.dta, clear s(mean sum)
+```
+![](img/sum5.jpg)
+
 # List of statistics
 
 For both commands, the list of allowed statistics is:
