@@ -334,9 +334,15 @@ if "`nototal'" == "" {
     mat colnames `Stat`iby'' = `varlist'
     mat rownames `Stat`iby'' = `stats'
 
+    if "`by'" ~= ""{
+        local condition in `touse_first'/`touse_last'
+    }
+    else{
+        local condition if `touse'==1
+
     forvalues i = 1/`nvars' {
         if regexm("`cmd'", "sum") {
-            qui summ `var`i''  `wght' if `touse' == 1, `summopt'
+            qui summ `var`i''  `wght' `condition', `summopt'
             forvalues is = 1/`nstats' {
                 if "`cmd`is''" == "sum"{
                     if "`name`is''"== "freq"{
@@ -352,7 +358,7 @@ if "`nototal'" == "" {
             }
         }
         if "`pctileopt'" ~= ""{
-            qui _pctile `var`i'' `wght' if `touse' == 1, p(`pctileopt')
+            qui _pctile `var`i'' `wght' `condition', p(`pctileopt')
             forvalues is = 1/`nstats' {
                 if "`cmd`is''" == "pctile"{
                     mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -636,31 +642,31 @@ else {
                 }
             di as txt "{c |}{...}"
                 forvalues i = `i1'/`i2' {
-                 if "`name`is''" == "missing" & "`name`=`is'-1''" == "N"{
-                  local s1 : display `fmt`i'' `Stat`iby''[`is',`i'] 
-                  local s2 : display %4.0f `Stat`iby''[`is',`i']/(`Stat`iby''[1,`i']+`Stat`iby''[`=`is'-1',`i'])
-                  local s1 `=trim("`s1'")'
-                  local s2 `=trim("`s2'")'
-                  di as res %`colwidth's "`s1' (`s2'%)" _c
-              }
-              else{
-                local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
-                di as res %`colwidth's "`s'" _c
+                   if "`name`is''" == "missing" & "`name`=`is'-1''" == "N"{
+                      local s1 : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                      local s2 : display %4.0f `Stat`iby''[`is',`i']/(`Stat`iby''[1,`i']+`Stat`iby''[`=`is'-1',`i'])
+                      local s1 `=trim("`s1'")'
+                      local s2 `=trim("`s2'")'
+                      di as res %`colwidth's "`s1' (`s2'%)" _c
+                  }
+                  else{
+                    local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                    di as res %`colwidth's "`s'" _c
+                }
             }
+            di
         }
-        di
-    }
-    if (`iby' >= `nbyt') {
-    di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
-    }
-    else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
-    di as txt "{hline `lleft'}{c +}{hline `ndash'}"
-    }
-} /* forvalues iby */
+        if (`iby' >= `nbyt') {
+        di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
+        }
+        else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
+        di as txt "{hline `lleft'}{c +}{hline `ndash'}"
+        }
+    } /* forvalues iby */
 
-if `iblock' < `nvblock' {
-    display
-}
+    if `iblock' < `nvblock' {
+        display
+    }
 } /* forvalues iblock */
 }
 
