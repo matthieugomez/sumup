@@ -1,0 +1,18 @@
+v 3
+
+d stat. wrapper for fastabstat, with a syntax closer to summarize
+d
+d Author: 
+d Support: 
+d
+d
+d KW: fastabstat
+d
+d Requires: Stata version 11.2
+d
+d Distribution-Date: 20150330
+d
+
+f stat.ado
+
+e
