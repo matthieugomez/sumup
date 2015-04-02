@@ -4,7 +4,7 @@ The command `stat` prints summary statistics by groups.
 
 
 
-### `stat` can return any statistics by group
+### `stat` prints statistics by group
 
 ```
 stat hours, by(race)  s(mean p80)
@@ -45,7 +45,7 @@ stat hours, by(race)
 ```
 ![](img/sum.jpg)
 
-You can compute more statistics with the option `detail`:
+The option `detail` behaves similarly than in `summarize`:
 ```
 stat hours, by(race) detail
 ```
@@ -64,7 +64,7 @@ stat hours, by(race married) s(m)
 
 
 ### `stat`can `collapse` to an external dataset
-Just use the `output` option
+Just use the `output` option:
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
