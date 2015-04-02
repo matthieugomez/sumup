@@ -17,14 +17,13 @@ stat hours, by(race) detail
 
 
 
-### `stat` accepts any statistics
+### `stat` can return any statistics
 
 ```
 stat hours, by(race)  s(mean p80)
 ```
 ![](img/sum6.jpg)
 
-The list of allowed statistics is:
 
 Name | Definition
 ---|---
@@ -47,6 +46,7 @@ q             | equivalent to specifying p25 p50 p75
 nmissing	|	Number of missing observations
 p??			|	any ??th percentile
 
+There is no limit on the number of statistics
 
 ### `stat` accepts groups defined by  multiple variables
 
@@ -59,7 +59,7 @@ stat hours, by(race married) s(m)
 
 
 ### `stat`can `collapse` to an external dataset
-
+Just use the `output` option
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
@@ -67,7 +67,7 @@ describe using temp.dta
 ![](img/sum5.jpg)
 
 ### `stat` is fast
-`stat` is faster than `tabulate`, `table, contents`, `tabstat`, or `collapse`
+`stat` is faster than `tabulate, sum()` ; `table, contents()`; `tabstat`; or `collapse`
 
 
 # fasttabstat
