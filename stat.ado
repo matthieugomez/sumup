@@ -339,6 +339,7 @@ if "`nototal'" == "" {
     }
     else{
         local condition if `touse'==1
+    }
 
     forvalues i = 1/`nvars' {
         if regexm("`cmd'", "sum") {

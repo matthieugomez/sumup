@@ -1,33 +1,29 @@
-# fasttabstat
 
-The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
-- `fasttabstat`  is 10x faster than `tabstat`.
-- `fasttabstat` accepts more statistics than `tabstat` : 
-	- any percentile 
-	- `nmissing` : number of missing observations.
+The command `stat` prints summary statistics by groups. 
 
-
-# stat
-The command `stat` is a wrapper for `fastabstat`, with a syntax closer to `summarize`:
--  By default, the same statistics than `summarize` ; the option `detail` is allowed.
-- `stat` returns a list of scalar of the form `r(statname_byvalue)` instead of matrices
-- `stat` works with groups defined by multiple variables
+```
+stat hours, by(race)  s(mean p80)
+```
+![](img/sum6.jpg)
 
 
-### `stat` can be used to `summarize` observations by group
+
+### `stat` computes by default the same statistics than `summarize` 
+
 ```
 sysuse nlsw88.dta, clear
 stat hours, by(race) 
 ```
 ![](img/sum.jpg)
 
+You can compute more statistics with the option `detail`:
 ```
-stat hours, by(race married) detail
+stat hours, by(race) detail
 ```
 ![](img/sum3.jpg)
 
 
-### `stat` can also be used to `tabulate`  by multiple variables
+### `stat` can be used for groups defined by  by multiple variables
 
 ```
 stat hours, by(race married) s(m)
@@ -35,13 +31,17 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
-### `stat`can also be used to `collapse` to an external dataset
+### `stat`can be used to `collapse` to an external dataset
 
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sum5.jpg)
+
+
+### `stat` is fast
+`stat` is faster than `tabulate`, `table, contents` or `tabstat` .
 
 # List of statistics
 
@@ -67,4 +67,12 @@ iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
 nmissing	|	Number of missing observations
 p??			|	??th percentile
+
+# fasttabstat
+
+The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
+- `fasttabstat`  is 10x faster than `tabstat`.
+- `fasttabstat` accepts more statistics than `tabstat` : 
+	- any percentile 
+	- `nmissing` : number of missing observations.
 
