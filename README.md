@@ -8,7 +8,7 @@ stat hours, by(race)  s(mean p80)
 
 
 
-### `stat` computes by default the same statistics than `summarize` 
+### `stat` has the same defaults than `summarize` 
 
 ```
 sysuse nlsw88.dta, clear
@@ -23,7 +23,7 @@ stat hours, by(race) detail
 ![](img/sum3.jpg)
 
 
-### `stat` can be used for groups defined by  by multiple variables
+### `stat` accepts groups defined by  multiple variables
 
 ```
 stat hours, by(race married) s(m)
@@ -31,7 +31,7 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
-### `stat`can be used to `collapse` to an external dataset
+### `stat`can `collapse` to an external dataset
 
 ```
 stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
@@ -41,7 +41,7 @@ describe using temp.dta
 
 
 ### `stat` is fast
-`stat` is faster than `tabulate`, `table, contents` or `tabstat` .
+`stat` is faster than `tabulate`, `table, contents`, `tabstat`, or `collapse`
 
 # List of statistics
 
