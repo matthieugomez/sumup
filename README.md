@@ -1,7 +1,7 @@
 
 The command `stat` prints summary statistics by groups. 
 
-### `stat` has the same defaults than `summarize` 
+### `stat` can `summarize` by groups
 
 ```
 sysuse nlsw88.dta, clear
@@ -16,22 +16,8 @@ stat hours, by(race) detail
 ![](img/sum3.jpg)
 
 
-### `stat` accepts groups defined by  multiple variables
 
-```
-stat hours, by(race married) s(m)
-```
-![](img/sum4.jpg)
-
-
-
-
-
-### `stat` is fast
-`stat` is faster than `tabulate`, `table, contents`, `tabstat`, or `collapse`
-
-
-### `stat` accepts many statistics
+### `stat` accepts any statistics
 
 ```
 stat hours, by(race)  s(mean p80)
@@ -62,6 +48,16 @@ nmissing	|	Number of missing observations
 p??			|	any ??th percentile
 
 
+### `stat` accepts groups defined by  multiple variables
+
+```
+stat hours, by(race married) s(m)
+```
+![](img/sum4.jpg)
+
+
+
+
 ### `stat`can `collapse` to an external dataset
 
 ```
@@ -69,6 +65,9 @@ stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sum5.jpg)
+
+### `stat` is fast
+`stat` is faster than `tabulate`, `table, contents`, `tabstat`, or `collapse`
 
 
 # fasttabstat
