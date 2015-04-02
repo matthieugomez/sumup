@@ -1,23 +1,10 @@
 
 The command `stat` prints summary statistics by groups. 
 
-### `stat` can `summarize` by groups
-
-```
-sysuse nlsw88.dta, clear
-stat hours, by(race) 
-```
-![](img/sum.jpg)
-
-You can compute more statistics with the option `detail`:
-```
-stat hours, by(race) detail
-```
-![](img/sum3.jpg)
 
 
 
-### `stat` can return any statistics
+### `stat` can return any statistics by group
 
 ```
 stat hours, by(race)  s(mean p80)
@@ -47,6 +34,24 @@ nmissing	|	Number of missing observations
 p??			|	any ??th percentile
 
 There is no limit on the number of statistics
+
+### `stat` has smart defaults
+
+By default, `stat` returns the same set of statistics than `summarize` 
+
+```
+sysuse nlsw88.dta, clear
+stat hours, by(race) 
+```
+![](img/sum.jpg)
+
+You can compute more statistics with the option `detail`:
+```
+stat hours, by(race) detail
+```
+![](img/sum3.jpg)
+
+
 
 ### `stat` accepts groups defined by  multiple variables
 
