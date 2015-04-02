@@ -1,13 +1,6 @@
 
 The command `stat` prints summary statistics by groups. 
 
-```
-stat hours, by(race)  s(mean p80)
-```
-![](img/sum6.jpg)
-
-
-
 ### `stat` has the same defaults than `summarize` 
 
 ```
@@ -31,21 +24,21 @@ stat hours, by(race married) s(m)
 ![](img/sum4.jpg)
 
 
-### `stat`can `collapse` to an external dataset
 
-```
-stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
-describe using temp.dta
-```
-![](img/sum5.jpg)
 
 
 ### `stat` is fast
 `stat` is faster than `tabulate`, `table, contents`, `tabstat`, or `collapse`
 
-# List of statistics
 
-For both commands, the list of allowed statistics is:
+### `stat` accepts many statistics
+
+```
+stat hours, by(race)  s(mean p80)
+```
+![](img/sum6.jpg)
+
+The list of allowed statistics is:
 
 Name | Definition
 ---|---
@@ -66,7 +59,17 @@ median        | median (same as p50)
 iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
 nmissing	|	Number of missing observations
-p??			|	??th percentile
+p??			|	any ??th percentile
+
+
+### `stat`can `collapse` to an external dataset
+
+```
+stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
+describe using temp.dta
+```
+![](img/sum5.jpg)
+
 
 # fasttabstat
 
