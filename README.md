@@ -7,6 +7,7 @@ The command `stat` prints summary statistics by groups.
 ### `stat` prints statistics by group
 
 ```
+sysuse nlsw88.dta, clear
 stat hours, by(race)  s(mean p80)
 ```
 ![](img/sum6.jpg)
@@ -40,7 +41,6 @@ There is no limit on the number of statistics
 By default, `stat` returns the same set of statistics than `summarize` 
 
 ```
-sysuse nlsw88.dta, clear
 stat hours, by(race) 
 ```
 ![](img/sum.jpg)

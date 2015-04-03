@@ -253,10 +253,10 @@ if "`by'" != "" {
 
     /* get back to original */
     local iby = 0
-    scalar start = `touse_first'
+    local start = `touse_first'
     local maxlength 0
-    while `=start' < `touse_last'{
-        scalar end = `=start' + `=`bylength'[`=start']' - 1
+    while `start' < `touse_last'{
+        local end = `start' + `=`bylength'[`start']' - 1
         local iby = `iby' + 1
         tempname Stat`iby'
         mat `Stat`iby'' = J(`nstats',`nvars',0)
@@ -264,20 +264,20 @@ if "`by'" != "" {
         mat rownames `Stat`iby'' = `stats'
         local byval ""
         foreach b in `by' {
-            local byval `byval' `: label (`b') `=`b'[`=start']''
+            local byval `byval' `: label (`b') `=`b'[`start']''
         }
 
         * loop over all variables
         forvalues i = 1/`nvars' {
             if regexm("`cmd'", "sum") {
-                qui summ `var`i'' in `=start'/`=end' `wght', `summopt'
+                qui summ `var`i'' in `start'/`end' `wght', `summopt'
                 forvalues is = 1/`nstats' {
                     if "`cmd`is''" == "sum"{
                         if "`name`is''"== "freq"{
-                            mat `Stat`iby''[`is',`i'] = `=end' - `=start' +1
+                            mat `Stat`iby''[`is',`i'] = `end' - `start' +1
                         }
                         else if  "`name`is''"== "missing"{
-                            mat `Stat`iby''[`is',`i'] = `=end' - `=start' + 1 - `expr`is''
+                            mat `Stat`iby''[`is',`i'] = `end' - `start' + 1 - `expr`is''
                         }
                         else{
                             mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -286,7 +286,7 @@ if "`by'" != "" {
                 }
             }
             if "`pctileopt'" ~= ""{
-                qui _pctile `var`i'' in `=start'/`=end' `wght', p(`pctileopt')
+                qui _pctile `var`i'' in `start'/`end' `wght', p(`pctileopt')
                 forvalues is = 1/`nstats' {
                     if "`cmd`is''" == "pctile"{
                         mat `Stat`iby''[`is',`i'] = `expr`is''
@@ -306,7 +306,7 @@ if "`by'" != "" {
         if "`output'"~=""{
             local bypost ""
             foreach b in `by'{
-                local bypost `bypost' (`=`b'[`=start']')
+                local bypost `bypost' (`=`b'[`start']')
             }
             local statpost ""
             forvalues i = 1/`nvars' {
@@ -316,7 +316,7 @@ if "`by'" != "" {
             }
             post `postname' `bypost' `statpost'
         }
-        scalar start = `=end' + 1
+        local start = `end' + 1
 
     }
     local nby `iby'
