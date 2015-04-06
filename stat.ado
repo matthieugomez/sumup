@@ -127,7 +127,7 @@ forvalues i = 1/`nvars' {
         local fmt`i' `format2'
     }
     else if "`name`i''" == "missing"{
-        local fmt`i' %6.0g
+        local fmt`i' %4.0g
     }
     else{
         local fmt`i' %9.0g
@@ -564,8 +564,7 @@ if "`incol'" == "statistics" {
                 forvalues is = `is1'/`is2' {
                     if "`name`is''" == "missing" & "`name`=`is'-1''" == "N"{
                         local s1 : display `fmt`i'' `Stat`iby''[`is',`i'] 
-                        local s2 : display %4.0f `Stat`iby''[`is',`i']/(`Stat`iby''[1,`i']+`Stat`iby''[`=`is'-1',`i'])
-                        local s1 `=trim("`s1'")'
+                        local s2 : display %4.0f `=100*`Stat`iby''[`is',`i']/(`Stat`iby''[`is',`i']+`Stat`iby''[`=`is'-1',`i'])'
                         local s2 `=trim("`s2'")'
                         di as res %`colwidth's "`s1' (`s2'%)" _c
                     }
