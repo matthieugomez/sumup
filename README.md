@@ -83,8 +83,7 @@ describe using temp.dta
 ![](img/sum5.jpg)
 
 ### `sumup` is fast
-`sumup` is more flexible than `tabulate, sum()`
-`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`
+`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. 
 
 # fasttabstat
 
