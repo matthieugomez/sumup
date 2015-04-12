@@ -27,7 +27,7 @@ sumup hours, by(race) detail
 ![](img/sum3.jpg)
 
 
-### `sumup` accepts any statistics below:
+### `sumup` is flexible
 The list of allowed statistics is:
 
 Name | Definition
@@ -36,7 +36,6 @@ mean          | mean
 count         | count of nonmissing observations
 n             | same as count
 missing	|	Number of missing observations
-
 sum           | sum
 max           | maximum
 min           | minimum
@@ -66,6 +65,7 @@ sumup hours, by(race married)
 
 
 This makes `sumup` a useful replacement for `tabulate`:
+
 ```
 sumup, by(race married) 
 ```
