@@ -1,18 +1,37 @@
 
-The command `stat` prints summary statistics by groups. 
+The command `sumup` prints summary statistics by groups. 
 
 
 
 
-### `stat` prints statistics by group
+### `sumup` prints statistics by group
 
 ```
 sysuse nlsw88.dta, clear
-stat hours, by(race)  s(mean p80)
+sumup hours, by(race)  statistics(mean p80)
 ```
 ![](img/sum6.jpg)
 
 
+### `sumup` has smart defaults
+
+By default, `sumup` returns the same set of statistics than `summarize` 
+
+```
+sumup hours, by(race) 
+```
+![](img/sum.jpg)
+
+The option `detail` behaves similarly than in `summarize`:
+```
+sumup hours, by(race) detail
+```
+![](img/sum3.jpg)
+
+
+### `sumup` accepts an arbitrary number of statistics
+
+The list of allowed statistics is:
 Name | Definition
 ---|---
 mean          | mean
@@ -34,45 +53,29 @@ q             | equivalent to specifying p25 p50 p75
 nmissing	|	Number of missing observations
 p??			|	any ??th percentile
 
-There is no limit on the number of statistics
-
-### `stat` has smart defaults
-
-By default, `stat` returns the same set of statistics than `summarize` 
-
-```
-stat hours, by(race) 
-```
-![](img/sum.jpg)
-
-The option `detail` behaves similarly than in `summarize`:
-```
-stat hours, by(race) detail
-```
-![](img/sum3.jpg)
 
 
 
-### `stat` accepts groups defined by  multiple variables
+### `sumup` accepts groups defined by  multiple variables
 
 ```
-stat hours, by(race married) s(m)
+sumup, by(race married) statistics(n)
 ```
 ![](img/sum4.jpg)
 
 
 
 
-### `stat`can `collapse` to an external dataset
-Just use the `output` option:
+### `sumup` can `collapse` to an external dataset
+Use the `output` option:
 ```
-stat hours wage , by(race married) s(mean p50 p90) output(temp.dta)
+sumup hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sum5.jpg)
 
-### `stat` is fast
-`stat` is faster than `tabulate, sum()` ; `table, contents()`; `tabstat`; or `collapse`
+### `sumup` is fast
+`sumup` is faster than `tabulate, sum()` ; `table, contents()`; `tabstat`; or `collapse`
 
 
 # fasttabstat

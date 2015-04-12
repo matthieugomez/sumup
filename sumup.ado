@@ -1,4 +1,4 @@
-program stat, rclass 
+program sumup, rclass 
 version 12.1
 syntax [varlist(default=none)] [if] [in] [aweight fweight pweight] [, Detail by(varlist) Output(str) replace Statistics(str)  missing seps(numlist) /*
 */     CASEwise Columns(str) Format Format2(str) /*
