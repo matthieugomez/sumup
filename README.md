@@ -13,7 +13,7 @@ sumup hours, by(race)  statistics(mean p80)
 ![](img/sum6.jpg)
 
 
-### `sumup` has smart defaults
+### `sumup` extends `summarize`:
 
 By default, `sumup` returns the same set of statistics than `summarize` 
 
@@ -57,7 +57,7 @@ p??			|	any ??th percentile
 
 
 
-### `sumup` can group by several variables:
+### `sumup` accepts groups defined by several variables:
 
 You can compute summary statistics within groups defined by multiple variables:
 
@@ -67,7 +67,7 @@ sumup hours, by(race married)
 ![](img/sum7.jpg)
 
 
-This makes `sumup` an extension of `tabulate` for groups are defined by multiple variables
+This makes `sumup` an extension of `tabulate` for groups defined by multiple variables
 ```
 sumup, by(race married) 
 ```

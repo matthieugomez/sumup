@@ -1,8 +1,8 @@
 program sumup, rclass 
 version 12.1
-syntax [varlist(default=none)] [if] [in] [aweight fweight pweight] [, Detail by(varlist) Output(str) replace Statistics(str)  missing seps(numlist) /*
-*/     CASEwise Columns(str) Format Format2(str) /*
-*/      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
+syntax [varlist(default=none)] [if] [in] [aweight fweight pweight] [, Detail by(varlist) Output(str) replace Statistics(str)  seps(numlist) /*
+*/     CASEwise Format Format2(str) /*
+*/      LAbelwidth(int -1) VArwidth(int -1)  Missing /*
 */      SAME SAVE noSEParator noTotal septable(string)]
 
 
@@ -12,7 +12,6 @@ if "`varlist'" == ""{
     local varlist `: word 1 of `by''
     local statistics n
 }
-
 
 if "`statistics'" == ""{		
     if "`detail'" == ""{
@@ -56,27 +55,8 @@ if `"`format2'"' != "" {
     }
 }
 
-if `"`columns'"' == "" {
-    local incol "variables"
-}
-else if `"`columns'"' == substr("variables",1,length(`"`columns'"')) {
-    local incol "variables"
-}
-else if `"`columns'"' == substr("statistics",1,length(`"`columns'"')) {
-    local incol "statistics"
-}
-else if `"`columns'"' == "stats" {
-    local incol "statistics"
-}
-else {
-    di as err `"column(`columns') invalid -- specify "' /*
-    */ "column(variables) or column(statistics)"
-    exit 198
-}
+local incol "statistics"
 
-if "`longstub'" != "" | "`by'" == "" | `varwidth' != -1 {
-    local descr descr
-}
 
 if `varwidth' == -1 {
     local varwidth 12
@@ -243,19 +223,20 @@ if "`by'" != "" {
 
 
     local byn : word count `by'
-    if `byn'>1{
-        local bytype str20
-        local for ""
+
+    local ib 0
+    local maxlength 0
+    foreach b in `by'{
+        local ++ib
+        local bytype`ib': type `b'
+        local for`ib': format `b'
+        local maxlength`ib' 0
     }
-    else{
-        local bytype: type `by'
-        local for : format `by'
-    }
+
 
     /* get back to original */
     local iby = 0
     local start = `touse_first'
-    local maxlength 0
     while `start' < `touse_last'{
         local end = `start' + `=`bylength'[`start']' - 1
         local iby = `iby' + 1
@@ -264,8 +245,14 @@ if "`by'" != "" {
         mat colnames `Stat`iby'' = `varlist'
         mat rownames `Stat`iby'' = `stats'
         local byval ""
+
+
+        * save label for groups in lab1, lab2 etc
+        local ib 0
         foreach b in `by' {
-            local byval `byval' `: label (`b') `=`b'[`start']''
+            local ++ib
+            local lab`iby'`ib' `: label (`b') `=`b'[`start']''
+            local maxlength`ib' = max(strlen(`"`lab`iby'`ib''"'),`maxlength`ib'')
         }
 
         * loop over all variables
@@ -296,14 +283,6 @@ if "`by'" != "" {
             }
         }   
 
-
-
-
-        * save label for groups in lab1, lab2 etc
-        local lab`iby' `byval'
-        local maxlength `=max(strlen(`"`byval'"'),`maxlength')'
-
-
         if "`output'"~=""{
             local bypost ""
             foreach b in `by'{
@@ -321,10 +300,13 @@ if "`by'" != "" {
 
     }
     local nby `iby'
+
 }
 else {
     local nby 0
 }
+
+
 
 if "`nototal'" == "" {
     * unconditional (Total) statistics are stored in Stat`nby+1'
@@ -368,7 +350,10 @@ if "`nototal'" == "" {
             }
         }
     }
-    local lab`iby' "Total"
+    local ib = 0
+    foreach b in `by'{
+        local lab`iby'`ib' "Total"
+    }
 }
 
 if "`output'"~= ""{
@@ -381,96 +366,85 @@ if "`output'"~= ""{
 * --------------------------------
 
 if "`by'" != "" {
-    if substr("`bytype'",1,3) != "str" {
-        local byw = min(`labelwidth',`maxlength')
-    }
-    else {
-        local byw=min(real(substr("`bytype'",4,.)),`labelwidth')
-        local bytype str
-    }
-    capture local if_date_for = substr("`for'", index("`for'", "%"), index("`for'", "d"))
-    capture local if_time_for = substr("`for'", index("`for'", "%"), index("`for'", "t"))
-    if "`if_date_for'" == "%d" | "`if_time_for'" == "%t" {
-        if "`if_date_for'" == "%d" {
-            local has_M = index("`for'", "M")
-            local has_L = index("`for'", "L")
-            if `has_M' > 0 | `has_L' > 0 {
-                local byw = 18
+    local ib = 0
+    foreach b in `by'{
+        local ++ib
+        if substr("`bytype`ib''",1,3) != "str" {
+            local byw`ib' = min(floor((`labelwidth'+1)/`byn')-1,`maxlength`ib'')
+        }
+        else {
+            local byw`ib'=min(real(substr("`bytype`ib''",4,.)),floor((`labelwidth'+1)/`byn')-1)
+            local bytype`ib' str
+        }
+        
+        capture local if_date_for`ib' = substr("`for`ib''", index("`for`ib''", "%"), index("`for`ib''", "d"))
+        capture local if_time_for`ib' = substr("`for`ib''", index("`for`ib''", "%"), index("`for`ib''", "t"))
+        if "`if_date_for`ib''" == "%d" | "`if_time_for`ib''" == "%t" {
+            if "`if_date_for`ib''" == "%d" {
+                local has_M = index("`for`ib''", "M")
+                local has_L = index("`for`ib''", "L")
+                if `has_M' > 0 | `has_L' > 0 {
+                    local byw`ib' = 18
+                }
+                else {
+                    local byw`ib' = 11
+                }
             }
             else {
-                local byw = 11
+                local byw`ib' = 9
             }
         }
         else {
-            local byw = 9
+            local byw`ib' = max(length("`b'"), `byw`ib'')
+        }
+        if "`nototal'" == "" {
+            local byw`ib' = max(`byw`ib'', 6)
         }
     }
-    else {
-        local byw = max(length("`by'"), `byw')
-    }
-    if "`nototal'" == "" {
-        local byw = max(`byw', 6)
+    local bw 0
+    local ib 0
+    foreach b in `by'{
+        local ++ib
+        local byw = `byw' + `byw`ib'' + 1
     }
 }
 else {
-    local byw 8
+    local byw 9
 }
-
 * number of chars in display format
 local ndigit  9
 local colwidth = `ndigit'+2
 
 if "`incol'" == "statistics" {
-    local lleft = (1 + `byw')*("`by'"!="") + ///
+    local lleft = `byw' *("`by'"!="") + ///
     (`varwidth'+1)*("`descr'"!="")
 }
 else {
-    local lleft = (1 + `byw')*("`by'"!="") + (8+1)*("`descr'"!="")
+    local lleft = `byw'*("`by'"!="") + (8+1)*("`descr'"!="")
 }
+
 local cbar  = `lleft' + 1
 
 local lsize = c(linesize)
 * number of non-label elements in the row of a block
 local neblock = int((`lsize' - `cbar')/10)
-if "`seps'" == ""{
-    * number of blocks if stats horizontal
-    local nsblock  = 1 + int((`nstats'-1)/`neblock')
-    local is20  0 
-    forvalues i = 1/`nsblock' {
-        local is1`i' `=`is2`=`i'-1''+1'
-        local is2`i' `=min(`nstats', `is1`i'' + `neblock' - 1)'
-    }
-    * number of blocks if variables horizontal
-    local nvblock  = 1 + int((`nvars'-1)/`neblock')
-    local i20  0 
-    forvalues i = 1/`nvblock' {
-        local i1`i' `=`i2`=`i'-1''+1'
-        local i2`i' `=min(`nvars', `i1`i'' + `neblock' - 1)'
-    }
+* number of blocks if stats horizontal
+local nsblock  = 1 + int((`nstats'-1)/`neblock')
+local is20  0 
+forvalues i = 1/`nsblock' {
+    local is1`i' `=`is2`=`i'-1''+1'
+    local is2`i' `=min(`nstats', `is1`i'' + `neblock' - 1)'
 }
-else{
-    local seps `seps' `nstats'
-    local nsblock : word count `seps'
-    local is20  0 
-    forvalues i = 1/`nsblock' {
-        local is1`i' `=`is2`=`i'-1''+1'
-        local is2`i' `: word `i' of `seps''
-    }
-    local nvblock : word count `seps'
-    local i20  0 
-    forvalues i = 1/`nsblock' {
-        local i1`i' `=`i2`=`i'-1''+1'
-        local i2`i' `: word `i' of `seps''
-    }
+* number of blocks if variables horizontal
+local nvblock  = 1 + int((`nvars'-1)/`neblock')
+local i20  0 
+forvalues i = 1/`nvblock' {
+    local i1`i' `=`i2`=`i'-1''+1'
+    local i2`i' `=min(`nvars', `i1`i'' + `neblock' - 1)'
 }
 
 
-if "`descr'" != "" & "`by'" != "" {
-    local byalign lalign
-}
-else {
-    local byalign ralign
-}
+
 
 * display results
 * ---------------
@@ -502,379 +476,307 @@ if "`incol'" == "statistics" {
 
         * display header
         if "`by'" != "" {
-            local byname = abbrev("`by'",`byw')
-            di as txt "{`byalign' `byw':`byname'} {...}"
+            local ib 0
+            foreach b in `by'{
+                local ++ib
+                local byname`ib' = abbrev("`b'",`byw`ib'')
+                di as txt %~`byw`ib''s "`byname`ib''" _c
+                di as text " " _c 
+            }
         }
-        if "`descr'" != "" {
-            di as txt "{ralign `varwidth':variable} {...}"
-        }
-        di as txt "{c |}" _c
+        di as txt  "{c |}" _c
         forvalues is = `is1'/`is2' {
-            di as txt %`colwidth's "`titlename`is''" _c
+            di as txt %`colwidth's "`titlename`is'' " _c 
         }
-        local ndash = `colwidth'*(`is2'-`is1'+1)
+        local ndash = `colwidth'*(`is2'-`is1'+ 1)
         di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
 
         * loop over the categories of -by- (1..nby) and -total- (nby+1)
         local nbyt = `nby' + ("`nototal'" == "")
         forvalues iby = 1/`nbyt'{
-            forvalues i = 1/`nvars' {
-                if "`by'" != "" {
-                    if `i' == 1 {
-                        local lab = substr(`"`lab`iby''"', 1,`byw')
-                        if `"`lab'"' != "Total" {
-                            local val_lab `by'
+           forvalues i = 1/`nvars' {
+            if "`by'" != "" {
+                if `i' == 1 {
+                    local ib = 0
+                    foreach b in `by'{
+                        loca ++ib
+                        if `iby' < `nbyt' | "`nototal'" ~= ""{
+                            local lab = substr(`"`lab`iby'`ib''"', 1,`byw`ib'')
+                            local val_lab : value label `b'
                             if "`val_lab'" == "" {
-                                local type `bytype'
+                                local type `bytype`ib''
                                 local yes_str = index("`type'", "str")
                                 if `yes_str' == 0 {
-                                    capture local if_date_for = index("`for'", "%d")
-                                    capture local if_time_for = index("`for'", "%t")
-                                    if `if_date_for' > 0 | `if_time_for' > 0 {
-                                        local date_for : display `for' `lab'
-                                        di in txt `"{`byalign' `byw':`date_for'} {...}"'
+                                    capture local if_date_for`ib' = index("`for`ib''", "%d")
+                                    capture local if_time_for`ib' = index("`for`ib''", "%t")
+                                    if `if_date_for`ib'' > 0 | `if_time_for`ib'' > 0 {
+                                        local date_for`ib' : display `for`ib'' `lab'
+                                        di as txt %~`byw`ib''s  `"`date_for`ib''"' _c
+
                                     }
                                     else {
                                         /* okay for strLs */
-                                        di in txt `"{`byalign' `byw':`lab'} {...}"'
+                                        di as txt %~`byw`ib''s  `"`lab'"' _c
                                     }
 
                                 }
                                 else {
-                                    di in txt `"{`byalign' `byw':`lab'} {...}"'
+                                    di as txt %~`byw`ib''s  `"`lab'"' _c
                                 }
                             }
                             else {
-                                di in txt `"{`byalign' `byw':`lab'} {...}"'
+                                di as txt %~`byw`ib''s  `"`lab'"' _c
                             }
-
                         }
-                        else {
-                            di in txt `"{`byalign' `byw':`lab'} {...}"'
+                        else{
+                            di as txt %~`=`byw`ib'''s  `"Total"' _c   
                         }
-                    }
-                    else {
-                        di "{space `byw'} {...}"
+                        di as txt " " _c
                     }
                 }
-                if "`descr'" != "" {
-                    local avn = abbrev("`var`i''",`varwidth')
-                    di as txt "{ralign `varwidth':`avn'} {...}"
+                else {
+                    di "{space `=`byw'-1'} {...}"
                 }
-                di as txt "{c |}{...}"
-                forvalues is = `is1'/`is2' {
-                    if "`name`is''" == "N" | "`name`is''" == "missing"{
-                        local s : display %9.0fc `Stat`iby''[`is',`i'] 
-                        di as res %`colwidth's "`s'" _c
-                    }
-                    else{
-                        local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
-                        di as res %`colwidth's "`s'" _c
-                    }
-                }
-                di
-            }
-            if (`iby' >= `nbyt') {
-                di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
-            }
-            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
-                di as txt "{hline `lleft'}{c +}{hline `ndash'}"
-            }
-        }
-
-        if `isblock' < `nsblock' {
-            display
-        }
-        } /* isblock */
-    }
-    else {
-        * display the results: horizontal = variables (block wise)
-
-        if "`descr'" == "" {
-            di as txt _n `"Summary statistics:`names'"'
-            if "`by'" != "" {
-                di as txt `"  by categories of: `by' "'
-            }
-        }
-        di
-
-        * loop over all nvblock blocks of variables
-
-        local i2 0
-        forvalues iblock = 1/`nvblock' {
-
-            * i1..i2 are indices of variables in a block
-            local i1 = `i1`iblock''
-            local i2 = `i2`iblock''
-
-            * display header
-            if "`by'" != "" {
-                di as txt "{`byalign' `byw':`by'} {...}"
             }
             if "`descr'" != "" {
-                di as txt "   stats {...}"
+                local avn = abbrev("`var`i''",`varwidth')
+                di as txt "{ralign `varwidth':`avn'} " _c
             }
-            di as txt "{c |}{...}"
-            forvalues i = `i1'/`i2' {
-                * here vars are abbreviated to 8 chars
-                di as txt %`colwidth's abbrev("`var`i''",8) _c
-            }
-            local ndash = (`ndigit'+1)*(`i2'-`i1'+1)
-            di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
-
-            * loop over the categories of -by- (1..nby) and -total- (nby+1)
-            local nbyt = `nby' + ("`nototal'" == "")
-            forvalues iby = 1/`nbyt'{
-                forvalues is = 1/`nstats' {
-                    if "`by'" != "" {
-                        if `is' == 1 {
-                            local lab = substr(`"`lab`iby''"', 1, `byw')
-                            di as txt `"{`byalign' `byw':`lab'} {...}"'
-                        }
-                        else {
-                            di as txt "{space `byw'} {...}"
-                        }
-                    }
-                    if "`descr'" != "" {
-                        * names of statistics are at most 8 chars
-                        di as txt `"{ralign 8:`titlename`is''} {...}"'
-                    }
-                    di as txt "{c |}{...}"
-                    forvalues i = `i1'/`i2' {
-                        if "`name`is''" == "N" | "`name`is''" == "missing"{
-                           local s : display %9.0fc `Stat`iby''[`is',`i'] 
-                           di as res %`colwidth's "`s'" _c
-                       }
-
-                       else{
-                        local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
-                        di as res %`colwidth's "`s'" _c
-                    }
-                }
-                di
-            }
-            if (`iby' >= `nbyt') {
-                di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
-            }
-            else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
-                di as txt "{hline `lleft'}{c +}{hline `ndash'}"
-            }
-            } /* forvalues iby */
-
-            if `iblock' < `nvblock' {
-                display
-            }
-            } /* forvalues iblock */
-        }
-
-        * save results (mainly for certification)
-        * ---------------------------------------
-
-
-        if "`by'" == ""{
-            local iby `=`nby' + 1'
-            foreach is of numlist 1/`nstats'{
-                local localname  "`name`is''"
-                return scalar `localname' = `=`Stat`iby''[`is',1]'
-            }
-        }
-        forvalues iby = 1/`nby' {
-            local r(r`iby') `byval`i''
-            foreach is of numlist 1/`nstats'{
-                local localname  "`name`is''_`iby'"
-                return scalar `localname' = `=`Stat`iby''[`is',1]'
-            }
-        }
-        return local statlist `stats'
-        return local bylist `bylist'
-        forvalues iby = `nby'(-1)1 {
-            return local r`iby'  `byval`iby''
-        }
-        return scalar r = `nby'
-
-
-    end
-
-    /***************************************************************************************************
-    Modified helper function from tabstat
-
-    /* Stats str
-    processes the contents() option. It returns in
-    r(names)   -- names of statistics, separated by blanks
-    r(expr)    -- r() expressions for statistics, separated by blanks
-    r(summopt) -- option for summarize command (meanonly, detail)
-    ***************************************************************************************************/
-
-
-    note: if you add statistics, ensure that the name of the statistic
-    is at most 8 chars long.
-    */
-    cap program drop Stats2
-    program define Stats2, rclass
-        if `"`0'"' == "" {
-            local opt "mean"
-        }
-        else {
-            local opt `"`0'"'
-        }
-
-        * ensure that order of requested statistics is preserved
-        * invoke syntax for each word in input
-        local class 0
-        local nq 0
-        foreach st of local opt {
-            local 0 = lower(`", `st'"')
-
-            capt syntax [, n freq missing MEan sd Variance SUm COunt MIn MAx Range SKewness Kurtosis /*
-            */  SDMean SEMean p1 p5 p10 p25 p50 p75 p90 p95 p99 iqr q MEDian CV *]
-            if _rc {
-                di in err `"unknown statistic: `st'"'
-                exit 198
-            }
-            if "`median'" != "" {
-                local p50 p50
-            }
-            * class 1 : available via -summarize, meanonly-
-            * summarize.r(N) returns #obs (note capitalization)
-            local s "`n'`freq'`min'`mean'`max'`sum'"
-            if "`s'" != "" {
-                if "`n'" ~= ""{
-                    local titlename Obs
-                    local s N
+            di as txt  "{c |}" _c
+            forvalues is = `is1'/`is2' {
+                if "`name`is''" == "N" | "`name`is''" == "missing"{
+                    local s : display %9.0fc `Stat`iby''[`is',`i'] 
+                    di as res %`colwidth's "`s'" _c
                 }
                 else{
-                    local titlename `=strproper("`s'")'
+                    local s : display `fmt`i'' `Stat`iby''[`is',`i'] 
+                    di as res %`colwidth's "`s'" _c
                 }
-                local names "`names' `s'"
-                local titlenames `"`titlenames' `titlename'"'
-                local expr  "`expr' r(`s')"
-                local class = max(`class',1)
-                local cmd "`cmd' sum"
-                continue
             }
-            
-            if "`range'" != "" {
-                local names "`names' range"
-                local titlenames `"`titlenames' `s'"'
-                local expr  "`expr' r(max)-r(min)"
-                local class = max(`class',1)
-                local cmd "`cmd' sum"
-                continue
-            }
+            di
+        }
+        if (`iby' >= `nbyt') {
+            di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
+        }
+        else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
+            di as txt "{hline `lleft'}{c +}{hline `ndash'}"
+        }
+    }
 
-            if "`freq'" != "" {
-                local names "`names' freq"
-                local titlenames `"`titlenames' `s'"'
-                local expr  "`expr' r(N)"
-                local class = max(`class',1)
-                local cmd "`cmd' sum"
-                continue
-            }
+    if `isblock' < `nsblock' {
+        display
+    }
+    } /* isblock */
+}
 
-            if "`missing'" != "" {
-                local names "`names' missing"
-                local titlenames `"`titlenames' Missing"'
-                local expr  "`expr' r(N)"
-                local class = max(`class',1)
-                local cmd "`cmd' sum"
-                continue
-            }
+* save results (mainly for certification)
+* ---------------------------------------
 
 
-            * class 2 : available via -summarize-
+if "`by'" == ""{
+    local iby `=`nby' + 1'
+    foreach is of numlist 1/`nstats'{
+        local localname  "`name`is''"
+        return scalar `localname' = `=`Stat`iby''[`is',1]'
+    }
+}
+forvalues iby = 1/`nby' {
+    local r(r`iby') `byval`i''
+    foreach is of numlist 1/`nstats'{
+        local localname  "`name`is''_`iby'"
+        return scalar `localname' = `=`Stat`iby''[`is',1]'
+    }
+}
+return local statlist `stats'
+return local bylist `bylist'
+forvalues iby = `nby'(-1)1 {
+    return local r`iby'  `byval`iby''
+}
+return scalar r = `nby'
 
-            if "`sd'" != "" {
-                local names "`names' sd"
-                local titlenames `"`titlenames' "Std. Dev.""'
-                local expr  "`expr' r(sd)"
-                local class = max(`class',2)
-                local cmd "`cmd' sum"
-                continue
-            }
-            if "`sdmean'" != "" | "`semean'"!="" {
-                local names "`names' se(mean)"
-                local titlenames `"`titlenames' se(mean)"'
-                local expr  "`expr' r(sd)/sqrt(r(N))"
-                local class = max(`class',2)
-                local cmd "`cmd' sum"
-                continue
-            }
-            if "`variance'" != "" {
-                local names "`names' variance"
-                local titlenames `"`titlenames' `s'"'
-                local expr  "`expr' r(Var)"
-                local class = max(`class',2)
-                local cmd "`cmd' sum"
-                continue
-            }
-            if "`cv'" != "" {
-                local names "`names' cv"
-                local titlenames `"`titlenames' cv"'
-                local expr  "`expr' (r(sd)/r(mean))"
-                local class = max(`class',2)
-                local cmd "`cmd' sum"
-                continue
-            }
 
-            * class 3 : available via -detail-
+end
 
-            local s "`skewness'`kurtosis'`p1'`p5'`p10'`p25'`p50'`p75'`p90'`p95'`p99'"
-            if "`s'" != "" {
-                if inlist("`s'", "skewness", "kurtosis"){
-                    local titlename `=strproper("`s'")'
-                }
-                else{
-                    local titlename `s'
-                }
-                local names "`names' `s'"
-                local titlenames `"`titlenames' `titlename'"'
-                local expr  "`expr' r(`s')"
-                local class = max(`class',3)
-                local cmd "`cmd' sum"
-                continue
-            }
-            if "`iqr'" != "" {
-                local names "`names' iqr"
-                local titlenames `"`titlenames' iqr"'
-                local expr  "`expr' r(p75)-r(p25)"
-                local class = max(`class',3)
-                local cmd "`cmd' sum"
-                continue
-            }
-            if "`q'" != "" {
-                local names "`names' p25 p50 p75"
-                local titlenames `"`titlenames' p25 p50 p75"'
-                local expr  "`expr' r(p25) r(p50) r(p75)"
-                local class = max(`class',3)
-                local cmd "`cmd' sum"
-                continue
-            }
+/***************************************************************************************************
+Modified helper function from tabstat
 
-            if regexm("`options'","p[0-9]*"){
-                local quantile `=regexr("`options'", "p", "")'
-                local nq = `nq' + 1
-                local names "`names' `options'"
-                local titlenames `"`titlenames' `options'"'
-                local expr "`expr' r(r`nq')"
-                local pctileopt "`pctileopt' `quantile'"
-                local cmd "`cmd' pctile"
+/* Stats str
+processes the contents() option. It returns in
+r(names)   -- names of statistics, separated by blanks
+r(expr)    -- r() expressions for statistics, separated by blanks
+r(summopt) -- option for summarize command (meanonly, detail)
+***************************************************************************************************/
+
+
+note: if you add statistics, ensure that the name of the statistic
+is at most 8 chars long.
+*/
+cap program drop Stats2
+program define Stats2, rclass
+    if `"`0'"' == "" {
+        local opt "mean"
+    }
+    else {
+        local opt `"`0'"'
+    }
+
+    * ensure that order of requested statistics is preserved
+    * invoke syntax for each word in input
+    local class 0
+    local nq 0
+    foreach st of local opt {
+        local 0 = lower(`", `st'"')
+
+        capt syntax [, n freq missing MEan sd Variance SUm COunt MIn MAx Range SKewness Kurtosis /*
+        */  SDMean SEMean p1 p5 p10 p25 p50 p75 p90 p95 p99 iqr q MEDian CV *]
+        if _rc {
+            di in err `"unknown statistic: `st'"'
+            exit 198
+        }
+        if "`median'" != "" {
+            local p50 p50
+        }
+        * class 1 : available via -summarize, meanonly-
+        * summarize.r(N) returns #obs (note capitalization)
+        local s "`n'`freq'`min'`mean'`max'`sum'"
+        if "`s'" != "" {
+            if "`n'" ~= ""{
+                local titlename Obs
+                local s N
             }
+            else{
+                local titlename `=strproper("`s'")'
+            }
+            local names "`names' `s'"
+            local titlenames `"`titlenames' `titlename'"'
+            local expr  "`expr' r(`s')"
+            local class = max(`class',1)
+            local cmd "`cmd' sum"
+            continue
+        }
+
+        if "`range'" != "" {
+            local names "`names' range"
+            local titlenames `"`titlenames' `s'"'
+            local expr  "`expr' r(max)-r(min)"
+            local class = max(`class',1)
+            local cmd "`cmd' sum"
+            continue
+        }
+
+        if "`freq'" != "" {
+            local names "`names' freq"
+            local titlenames `"`titlenames' `s'"'
+            local expr  "`expr' r(N)"
+            local class = max(`class',1)
+            local cmd "`cmd' sum"
+            continue
+        }
+
+        if "`missing'" != "" {
+            local names "`names' missing"
+            local titlenames `"`titlenames' Missing"'
+            local expr  "`expr' r(N)"
+            local class = max(`class',1)
+            local cmd "`cmd' sum"
+            continue
         }
 
 
+        * class 2 : available via -summarize-
 
-
-        if `class' == 1 {
-            local summopt "meanonly"
+        if "`sd'" != "" {
+            local names "`names' sd"
+            local titlenames `"`titlenames' "Std. Dev.""'
+            local expr  "`expr' r(sd)"
+            local class = max(`class',2)
+            local cmd "`cmd' sum"
+            continue
         }
-        else if `class' == 3 {
-            local summopt "detail"
+        if "`sdmean'" != "" | "`semean'"!="" {
+            local names "`names' se(mean)"
+            local titlenames `"`titlenames' se(mean)"'
+            local expr  "`expr' r(sd)/sqrt(r(N))"
+            local class = max(`class',2)
+            local cmd "`cmd' sum"
+            continue
         }
-        return local names `names'
-        return local titlenames `titlenames'
+        if "`variance'" != "" {
+            local names "`names' variance"
+            local titlenames `"`titlenames' `s'"'
+            local expr  "`expr' r(Var)"
+            local class = max(`class',2)
+            local cmd "`cmd' sum"
+            continue
+        }
+        if "`cv'" != "" {
+            local names "`names' cv"
+            local titlenames `"`titlenames' cv"'
+            local expr  "`expr' (r(sd)/r(mean))"
+            local class = max(`class',2)
+            local cmd "`cmd' sum"
+            continue
+        }
 
-        return local expr  `expr'
-        return local cmd  `cmd'
-        return local summopt `summopt'
-        return local pctileopt  `pctileopt'
-    end
+        * class 3 : available via -detail-
+
+        local s "`skewness'`kurtosis'`p1'`p5'`p10'`p25'`p50'`p75'`p90'`p95'`p99'"
+        if "`s'" != "" {
+            if inlist("`s'", "skewness", "kurtosis"){
+                local titlename `=strproper("`s'")'
+            }
+            else{
+                local titlename `s'
+            }
+            local names "`names' `s'"
+            local titlenames `"`titlenames' `titlename'"'
+            local expr  "`expr' r(`s')"
+            local class = max(`class',3)
+            local cmd "`cmd' sum"
+            continue
+        }
+        if "`iqr'" != "" {
+            local names "`names' iqr"
+            local titlenames `"`titlenames' iqr"'
+            local expr  "`expr' r(p75)-r(p25)"
+            local class = max(`class',3)
+            local cmd "`cmd' sum"
+            continue
+        }
+        if "`q'" != "" {
+            local names "`names' p25 p50 p75"
+            local titlenames `"`titlenames' p25 p50 p75"'
+            local expr  "`expr' r(p25) r(p50) r(p75)"
+            local class = max(`class',3)
+            local cmd "`cmd' sum"
+            continue
+        }
+
+        if regexm("`options'","p[0-9]*"){
+            local quantile `=regexr("`options'", "p", "")'
+            local nq = `nq' + 1
+            local names "`names' `options'"
+            local titlenames `"`titlenames' `options'"'
+            local expr "`expr' r(r`nq')"
+            local pctileopt "`pctileopt' `quantile'"
+            local cmd "`cmd' pctile"
+        }
+    }
+
+
+
+
+    if `class' == 1 {
+        local summopt "meanonly"
+    }
+    else if `class' == 3 {
+        local summopt "detail"
+    }
+    return local names `names'
+    return local titlenames `titlenames'
+
+    return local expr  `expr'
+    return local cmd  `cmd'
+    return local summopt `summopt'
+    return local pctileopt  `pctileopt'
+end
