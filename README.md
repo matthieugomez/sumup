@@ -51,14 +51,15 @@ kurtosis      | kurtosis
 median        | median (same as p50)
 iqr           | interquartile range = p75 - p25
 q             | equivalent to specifying p25 p50 p75
-nmissing	|	Number of missing observations
+missing	|	Number of missing observations
 p??			|	any ??th percentile
 
 
 
 
-### `sumup` accepts groups defined by  multiple variables
+### `sumup` can group by several variables:
 
+You can compute summary statistics within groups defined by multiple variables:
 
 ```
 sumup hours, by(race married) 
@@ -66,7 +67,7 @@ sumup hours, by(race married)
 ![](img/sum7.jpg)
 
 
-Use `sumup` to tabulate distinct values with respect to more than one value
+This makes `sumup` an extension of `tabulate` for groups are defined by multiple variables
 ```
 sumup, by(race married) 
 ```
@@ -84,7 +85,7 @@ describe using temp.dta
 ![](img/sum5.jpg)
 
 ### `sumup` is fast
-`sumup` is faster than `tabulate, sum()` ; `table, contents()`; `tabstat`; or `collapse`
+`sumup` is faster than `tabulate, sum()` ; `table, contents()`; `tabstat` or `collapse`
 
 
 # fasttabstat
@@ -93,5 +94,5 @@ The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages
 - `fasttabstat`  is 10x faster than `tabstat`.
 - `fasttabstat` accepts more statistics than `tabstat` : 
 	- any percentile 
-	- `nmissing` : number of missing observations.
+	- `missing` : number of missing observations.
 
