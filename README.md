@@ -32,6 +32,7 @@ sumup hours, by(race) detail
 ### `sumup` accepts an arbitrary number of statistics
 
 The list of allowed statistics is:
+
 Name | Definition
 ---|---
 mean          | mean
@@ -58,8 +59,16 @@ p??			|	any ??th percentile
 
 ### `sumup` accepts groups defined by  multiple variables
 
+
 ```
-sumup, by(race married) statistics(n)
+sumup hours, by(race married) 
+```
+![](img/sum7.jpg)
+
+
+Use `sumup` to tabulate distinct values with respect to more than one value
+```
+sumup, by(race married) 
 ```
 ![](img/sum4.jpg)
 
