@@ -22,7 +22,7 @@ sumup hours, by(race)
 ```
 ![](img/sum.jpg)
 
-The option `detail` behaves similarly than in `summarize`:
+The option `detail` returns detailed statistics:
 ```
 sumup hours, by(race) detail
 ```
