@@ -38,7 +38,7 @@ if `"`stats'"' != "" {
     local stats
 }
 
-if "`nototal'" != "" & "`by'" == "" {
+if "`total'" != "" & "`by'" == "" {
     di as txt "nothing to display"
     exit 0
 }
@@ -307,8 +307,7 @@ else {
 }
 
 
-
-if "`nototal'" == "" {
+if "`total'" == "" {
     * unconditional (Total) statistics are stored in Stat`nby+1'
     local iby = `nby'+1
 
@@ -397,7 +396,7 @@ if "`by'" != "" {
         else {
             local byw`ib' = max(length("`b'"), `byw`ib'')
         }
-        if "`nototal'" == "" {
+        if "`total'" == "" {
             local byw`ib' = max(`byw`ib'', 6)
         }
     }
@@ -492,7 +491,7 @@ if "`incol'" == "statistics" {
         di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
 
         * loop over the categories of -by- (1..nby) and -total- (nby+1)
-        local nbyt = `nby' + ("`nototal'" == "")
+        local nbyt = `nby' + ("`total'" == "")
         forvalues iby = 1/`nbyt'{
            forvalues i = 1/`nvars' {
             if "`by'" != "" {
@@ -500,7 +499,7 @@ if "`incol'" == "statistics" {
                     local ib = 0
                     foreach b in `by'{
                         loca ++ib
-                        if `iby' < `nbyt' | "`nototal'" ~= ""{
+                        if `iby' <= `nby'{
                             local lab = substr(`"`lab`iby'`ib''"', 1,`byw`ib'')
                             local val_lab : value label `b'
                             if "`val_lab'" == "" {
@@ -558,7 +557,7 @@ if "`incol'" == "statistics" {
         if (`iby' >= `nbyt') {
             di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
         }
-        else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`nototal'" == "")) {
+        else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`total'" == "")) {
             di as txt "{hline `lleft'}{c +}{hline `ndash'}"
         }
     }
