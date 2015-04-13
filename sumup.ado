@@ -86,8 +86,8 @@ if "`by'" != "" & "`missing'" == "" {
     markout `touse' `by' , strok
 }
 qui count if `touse'
-local ntouse = r(N)
-if `ntouse' == 0 {
+local samplesize=r(N)
+if `samplesize' == 0 {
     error 2000
 }
 if `"`weight'"' != "" {
@@ -207,19 +207,13 @@ if "`output'" ~= ""{
 * ----------------------
 
 if "`by'" != "" {
-    * conditional statistics are saved in matrices Stat1, Stat2, etc
 
-    * the data are sorted on by groups, putting unused obs last
-    * be careful not to change the sort order
-    * note that touse is coded -1/0 rather than 1/0!
-    qui count if `touse'
-    local samplesize=r(N)
     local touse_first=_N-`samplesize'+1
     local touse_last=_N
 
-    if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")  local stouse `touse'
     tempvar bylength
-    bys `stouse' `by' : gen `bylength' = _N 
+    bys `touse' `by' : gen `bylength' = _N 
+
 
 
     local byn : word count `by'
@@ -234,6 +228,7 @@ if "`by'" != "" {
     }
 
 
+    tempname M
     /* get back to original */
     local iby = 0
     local start = `touse_first'
@@ -244,17 +239,24 @@ if "`by'" != "" {
         mat `Stat`iby'' = J(`nstats',`nvars',0)
         mat colnames `Stat`iby'' = `varlist'
         mat rownames `Stat`iby'' = `stats'
-        local byval ""
 
 
         * save label for groups in lab1, lab2 etc
         local ib 0
+        tempname Mrow
+        matrix `Mrow' = J(1, `byn', 0)
         foreach b in `by' {
             local ++ib
+            cap matrix `Mrow'[1, `ib'] = `=`b'[`start']'
             local lab`iby'`ib' `: label (`b') `=`b'[`start']''
             local maxlength`ib' = max(strlen(`"`lab`iby'`ib''"'),`maxlength`ib'')
         }
-
+        if `iby' == 1{
+            cap matrix `M' = `Mrow'
+        }
+        else{
+            cap matrix `M' = (`M' \ `Mrow')
+        }
         * loop over all variables
         forvalues i = 1/`nvars' {
             if regexm("`cmd'", "sum") {
@@ -573,26 +575,18 @@ if "`incol'" == "statistics" {
 
 
 if "`by'" == ""{
-    local iby `=`nby' + 1'
-    foreach is of numlist 1/`nstats'{
-        local localname  "`name`is''"
-        return scalar `localname' = `=`Stat`iby''[`is',1]'
+    return matrix StatTotal = `Stat`nbyt''
+}
+else{
+    forvalues iby = 1/`nby' {
+        return matrix Stat`iby' = `Stat`iby''
     }
-}
-forvalues iby = 1/`nby' {
-    local r(r`iby') `byval`i''
-    foreach is of numlist 1/`nstats'{
-        local localname  "`name`is''_`iby'"
-        return scalar `localname' = `=`Stat`iby''[`is',1]'
+    if "`total'" == ""{
+        return matrix StatTotal = `Stat`nbyt''
     }
+    matrix colnames `M' = `by'
+    return matrix by = `M' 
 }
-return local statlist `stats'
-return local bylist `bylist'
-forvalues iby = `nby'(-1)1 {
-    return local r`iby'  `byval`iby''
-}
-return scalar r = `nby'
-
 
 end
 
@@ -778,4 +772,6 @@ program define Stats2, rclass
     return local cmd  `cmd'
     return local summopt `summopt'
     return local pctileopt  `pctileopt'
+
+
 end
