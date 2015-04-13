@@ -1,0 +1,14 @@
+v 3
+
+d sumup. print summary statistics by group
+d
+d Author: Matthieu Gomez
+d
+d
+d KW: fastabstat tabstat
+d
+d Requires: Stata version 11.2
+d
+d Distribution-Date: 20150330
+d
+f sumup.ado
