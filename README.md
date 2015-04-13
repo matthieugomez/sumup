@@ -81,10 +81,11 @@ sumup hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sum5.jpg)
-Contrary to the `collapse` command, labels are lost in the process
+
+The output file is written using the command `postfile`, which allows to write a file without `preserving` the master dataset. Unfortunately, the output file does not include value labels and variable labels.
 
 ### `sumup` is fast
-`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast, but more powerful, than `tabulate, summarize()`.
+`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast as `tabulate, summarize()`.
 
 # fasttabstat
 `sumup` borrows heavily from `tabstat`. The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
