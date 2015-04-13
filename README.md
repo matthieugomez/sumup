@@ -84,8 +84,7 @@ describe using temp.dta
 Contrary to the `collapse` command, labels are lost in the process
 
 ### `sumup` is fast
-`sumup` is as fast as `tabulate, summarize()` but allows for more statistics.
-`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. 
+`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast, but more powerful, than `tabulate, summarize()`.
 
 # fasttabstat
 `sumup` borrows heavily from `tabstat`. The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
