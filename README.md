@@ -82,10 +82,10 @@ describe using temp.dta
 ```
 ![](img/sum5.jpg)
 
-The output file is written using the command `postfile`, which allows to write a file without `preserving` the master dataset. Unfortunately, the output file does not include value labels and variable labels.
+The output file is written using the command `postfile`, allowing to output a new file without `preserving` the master dataset. This saves time but, unfortunately, this means the output file does not include value labels and variable labels.
 
 ### `sumup` is fast
-`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast as `tabulate, summarize()`.
+`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
 
 # fasttabstat
 `sumup` borrows heavily from `tabstat`. The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
