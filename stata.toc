@@ -1,0 +1,10 @@
+v 3
+d M. Gomez
+p fastabstat drop-in version of tabstat, with two advantages
+p stat wrapper for fastabstat, with a syntax closer to summarize
+
+* l word-to-show path-or-url [description]
+* t: Directories within site:
+* t path [description]
+* Packages:
+* p pkgname [description]
