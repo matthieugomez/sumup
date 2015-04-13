@@ -64,7 +64,7 @@ sumup hours, by(race married)
 ![](img/sum7.jpg)
 
 
-This makes `sumup` a useful replacement for `tabulate`:
+This makes `sumup` a useful extension of `tabulate`:
 
 ```
 sumup, by(race married) 
@@ -81,13 +81,14 @@ sumup hours wage , by(race married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sum5.jpg)
+Contrary to the `collapse` command, labels are lost in the process
 
 ### `sumup` is fast
+`sumup` is as fast as `tabulate, summarize()` but allows for more statistics.
 `sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. 
 
 # fasttabstat
-
-The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
+`sumup` borrows heavily from `tabstat`. The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
 - `fasttabstat`  is 10x faster than `tabstat`.
 - `fasttabstat` accepts more statistics than `tabstat` : 
 	- any percentile 

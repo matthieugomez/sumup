@@ -340,17 +340,39 @@ program define fasttabstat, rclass byable(recall) sort
 	local lsize = c(linesize)
 	* number of non-label elements in the row of a block
 	local neblock = int((`lsize' - `cbar')/10)
-	* number of blocks if stats horizontal
-	local nsblock  = 1 + int((`nstats'-1)/`neblock')
-	* number of blocks if variables horizontal
-	local nvblock  = 1 + int((`nvars'-1)/`neblock')
+	if "`seps'" == ""{
+	    * number of blocks if stats horizontal
+	    local nsblock  = 1 + int((`nstats'-1)/`neblock')
+	    local is20  0 
+	    forvalues i = 1/`nsblock' {
+	        local is1`i' `=`is2`=`i'-1''+1'
+	        local is2`i' `=min(`nstats', `is1`i'' + `neblock' - 1)'
+	    }
+	    * number of blocks if variables horizontal
+	    local nvblock  = 1 + int((`nvars'-1)/`neblock')
+	    local i20  0 
+	    forvalues i = 1/`nvblock' {
+	        local i1`i' `=`i2`=`i'-1''+1'
+	        local i2`i' `=min(`nvars', `i1`i'' + `neblock' - 1)'
+	    }
+	}
+	else{
+	    local seps `seps' `nstats'
+	    local nsblock : word count `seps'
+	    local is20  0 
+	    forvalues i = 1/`nsblock' {
+	        local is1`i' `=`is2`=`i'-1''+1'
+	        local is2`i' `: word `i' of `seps''
+	    }
+	    local nvblock : word count `seps'
+	    local i20  0 
+	    forvalues i = 1/`nsblock' {
+	        local i1`i' `=`i2`=`i'-1''+1'
+	        local i2`i' `: word `i' of `seps''
+	    }
+	}
 
-	if "`descr'" != "" & "`by'" != "" {
-		local byalign lalign
-	}
-	else {
-		local byalign ralign
-	}
+	
 
 	* display results
 	* ---------------
@@ -376,11 +398,9 @@ program define fasttabstat, rclass byable(recall) sort
 
 		local is2 0
 		forvalues isblock = 1/`nsblock' {
-
 			* is1..is2 are indices of statistics in a block
 			local is1 = `is2' + 1
 			local is2 = min(`nstats', `is1'+`neblock'-1)
-
 			* display header
 			if "`by'" != "" {
 				local byname = abbrev("`by'",`byw')
