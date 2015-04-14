@@ -94,3 +94,8 @@ The output file is written using the command `postfile`, allowing to output a ne
 	- any percentile 
 	- `missing` : number of missing observations.
 
+
+# Installation
+```
+net install sumup , from(https://github.com/matthieugomez/stata-sumup/raw/master/)
+```
