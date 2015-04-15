@@ -6,9 +6,9 @@
 
 ```
 sysuse nlsw88.dta, clear
-sumup hours, by(race)  statistics(mean p80)
+sumup wage, by(industry) statistics(mean p80)
 ```
-![](img/sum6.jpg)
+![](img/sumstat.jpg)
 
 
 ### `sumup` extends `summarize`:
@@ -16,15 +16,15 @@ sumup hours, by(race)  statistics(mean p80)
 By default, `sumup` returns the same set of statistics than `summarize` 
 
 ```
-sumup hours, by(race) 
+sumup wage, by(industry) 
 ```
 ![](img/sum.jpg)
 
 With the option `detail`, `sumup` returns detailed statistics:
 ```
-sumup hours, by(race) detail
+sumup hours,  by(industry)  detail
 ```
-![](img/sum3.jpg)
+![](img/sumdetail.jpg)
 
 
 ### `sumup` is flexible
@@ -56,20 +56,20 @@ p??			|	any ??th percentile
 
 ### `sumup` accepts groups defined by several variables:
 
-`sumup` can compute summary statistics for groups defined by multiple variables:
+`sumup` can compute summary statistics for groups defined by *multiple* variables:
 
 ```
-sumup hours, by(race married) 
+sumup wage, by(union married) 
 ```
-![](img/sum7.jpg)
+![](img/sumgroups.jpg)
 
 
 This makes `sumup` a useful extension of `tabulate`:
 
 ```
-sumup, by(race married) 
+sumup, by(union married) 
 ```
-![](img/sum4.jpg)
+![](img/sumtab.jpg)
 
 
 
@@ -77,10 +77,10 @@ sumup, by(race married)
 ### `sumup` can `collapse` to an external dataset
 Just use the `output` option:
 ```
-sumup hours wage , by(race married) s(mean p50 p90) output(temp.dta)
+sumup hours wage , by(union married) s(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
-![](img/sum5.jpg)
+![](img/sumcollapse.jpg)
 
 The output file is written using the command `postfile`, allowing to output a new file without `preserving` the master dataset. This saves time but, unfortunately, this means the output file does not include value labels and variable labels.
 
