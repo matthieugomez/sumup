@@ -4,15 +4,6 @@
 
 ### `sumup` prints summary statistics by group
 
-```
-sysuse nlsw88.dta, clear
-sumup wage, by(industry) statistics(mean p80)
-```
-![](img/sumstat.jpg)
-
-
-### `sumup` extends `summarize`:
-
 By default, `sumup` returns the same set of statistics than `summarize` 
 
 ```
@@ -22,12 +13,21 @@ sumup wage, by(industry)
 
 With the option `detail`, `sumup` returns detailed statistics:
 ```
-sumup hours,  by(industry)  detail
+sumup wage, by(industry) detail
 ```
 ![](img/sumdetail.jpg)
 
 
 ### `sumup` is flexible
+
+The option `statistics` allows to specify a set of statistics:
+```
+sysuse nlsw88.dta, clear
+sumup wage, by(industry) statistics(mean p80)
+```
+![](img/sumstat.jpg)
+
+
 The list of allowed statistics is:
 
 Name | Definition
@@ -77,7 +77,7 @@ sumup, by(union married)
 ### `sumup` can `collapse` to an external dataset
 Just use the `output` option:
 ```
-sumup hours wage , by(union married) s(mean p50 p90) output(temp.dta)
+sumup hours wage, by(union married) statistics(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sumcollapse.jpg)
