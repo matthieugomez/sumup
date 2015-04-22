@@ -1,3 +1,9 @@
 v 3
-d M. Gomez
-p sumup print summary statistics by group
+d Matthieu Gomez, Princeton University (mattg@princeton.edu)
+p sumup SUMUP - print summary statistics by groups
+
+* l word-to-show path-or-url [description]
+* t: Directories within site:
+* t path [description]
+* Packages:
+* p pkgname [description]
