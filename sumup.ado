@@ -1,6 +1,6 @@
 program sumup, rclass 
 version 12.1
-syntax [varlist(default=none)] [if] [in] [aweight fweight pweight] [, Detail by(varlist) Output(str) replace Statistics(str)  seps(numlist) /*
+syntax [varlist(default=none)] [if] [in] [aweight fweight] [, Detail by(varlist) Output(str) replace Statistics(str)  seps(numlist) /*
 */     CASEwise Format Format2(str) /*
 */      LAbelwidth(int -1) VArwidth(int -1)  Missing /*
 */      SAME noSEParator noTotal septable(string)]
