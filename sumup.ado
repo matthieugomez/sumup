@@ -326,7 +326,7 @@ if "`save'"~= ""{
     }
     else{
         qui keep `by'
-        bys `by': keep if _n == 1
+        qui bys `by': keep if _n == 1
         qui merge 1:1 `by' using `save', nogen keep(matched)
     }
 }
