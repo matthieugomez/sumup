@@ -209,7 +209,7 @@ program define fasttabstat, rclass byable(recall) sort
 				if "`pctileopt'" ~= ""{
 					qui _pctile `var`i'' in `=start'/`=end' `wght', p(`pctileopt')
 					forvalues is = 1/`nstats' {
-						if "`cmd`is''" == "pctile"{
+						if "`cmd`is''" == "_pctile"{
 							mat `Stat`iby''[`is',`i'] = `expr`is''
 						}
 					}
@@ -266,7 +266,7 @@ program define fasttabstat, rclass byable(recall) sort
 			if "`pctileopt'" ~= ""{
 				qui _pctile `var`i'' `wght' if `touse' == 1, p(`pctileopt')
 				forvalues is = 1/`nstats' {
-					if "`cmd`is''" == "pctile"{
+					if "`cmd`is''" == "_pctile"{
 						mat `Stat`iby''[`is',`i'] = `expr`is''
 					}
 				}
@@ -727,7 +727,7 @@ program define Stats2, rclass
 			local names "`names' `options'"
 			local expr "`expr' r(r`nq')"
 			local pctileopt "`pctileopt' `quantile'"
-			local cmd "`cmd' pctile"
+			local cmd "`cmd' _pctile"
 		}
 	}
 

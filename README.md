@@ -7,6 +7,7 @@
 By default, `sumup` returns the same set of statistics than `summarize` 
 
 ```
+sysuse nlsw88.dta, clear
 sumup wage, by(race) 
 ```
 ![](img/sum.jpg)
@@ -22,7 +23,6 @@ sumup wage, by(industry) detail
 
 The option `statistics` allows to specify a set of statistics:
 ```
-sysuse nlsw88.dta, clear
 sumup wage, by(industry) statistics(mean p80)
 ```
 ![](img/sumstat.jpg)
@@ -75,14 +75,25 @@ sumup, by(union married)
 
 
 ### `sumup` can `collapse` to an external dataset
-You can write the result in an external dataset by using the `output` option:
+
+You can replace the existing dataset by the summary statistics using the `collapse` option
+```
+sumup hours wage, by(union married) statistics(mean p50 p90) collapse
+```
+
+
+Alternatively, you can also write the result in an external dataset by using the `output` option:
+
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
 ![](img/sumcollapse.jpg)
 
-The output file is written using the command `postfile`. For now, it does not include value labels and variable labels.
+
+
+
+One can directly 
 
 ### `sumup` is fast
 `sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
