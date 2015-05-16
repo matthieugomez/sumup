@@ -325,7 +325,7 @@ if "`save'"~= ""{
         display "file `save' written"
     }
     else{
-        keep `by'
+        qui keep `by'
         bys `by': keep if _n == 1
         qui merge 1:1 `by' using `save', nogen keep(matched)
     }
