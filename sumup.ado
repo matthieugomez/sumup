@@ -180,36 +180,32 @@ if `matsize' < `matreq' {
 }
 
 if "`save'" ~= ""{
-    if !regexm("`save'", "dta"){
-        local save `save'.dta
-    }
-
     cap confirm new file `"`save'"'
     if _rc ~= 0 & "`replace'" == ""{
         di as error  `"file `save' already exists. Specify option replace"'
         exit
     }
-    else{
-        tempfile savename
-        tempname postname
-        foreach b in `by' {
-            local postvars `postvars' `b'
-        }
-
-        if `nvars' == 1{
-            forvalues is = 1/`nstats'{
-                local postvars `postvars' `name`is''
-            }
-        }
-        else{
-            forvalues i = 1/`nvars' {
-                forvalues is = 1/`nstats'{
-                    local postvars `postvars' `var`i''_`name`is''
-                }
-            }
-        }
-        qui postfile `postname' `postvars' using `savename'
+    
+    tempfile postfile
+    tempname postname
+    foreach b in `by' {
+        local postvars `postvars' `: type `b'' `b'
     }
+
+    if `nvars' == 1{
+        forvalues is = 1/`nstats'{
+            local postvars `postvars' `name`is''
+        }
+    }
+    else{
+        forvalues i = 1/`nvars' {
+            forvalues is = 1/`nstats'{
+                local postvars `postvars' `var`i''_`name`is''
+            }
+        }
+    }
+    qui postfile `postname' `postvars' using `postfile'
+    
 }
 
 
@@ -298,12 +294,14 @@ if "`by'" != "" {
         if "`save'"~=""{
             local bypost ""
             foreach b in `by'{
-                local bypost `bypost' (`=`b'[`start']')
+                local bypost `bypost' (`b'[`start'])
             }
+
+
             local statpost ""
             forvalues i = 1/`nvars' {
                 forvalues is = 1/`nstats'{
-                    local statpost `statpost' (`=`Stat`iby''[`is',`i']')
+                    local statpost `statpost' (`Stat`iby''[`is',`i'])
                 }
             }
             post `postname' `bypost' `statpost'
@@ -320,14 +318,14 @@ else {
 /* compute total statistics*/
 if "`save'"~= ""{
     postclose `postname'
-    copy `savename' `save', `replace'
     if "`collapse'" == ""{
+        copy `postfile' `save', `replace'
         display "file `save' written"
     }
     else{
         qui keep `by'
         qui bys `by': keep if _n == 1
-        qui merge 1:1 `by' using `save', nogen keep(matched)
+        qui merge 1:1 `by' using `postfile', nogen keep(matched)
     }
 }
 else{
@@ -500,7 +498,7 @@ else{
         * loop over the categories of -by- (1..nby) and -total- (nby+1)
         local nbyt = `nby' + ("`total'" == "")
         forvalues iby = 1/`nbyt'{
-           forvalues i = 1/`nvars' {
+         forvalues i = 1/`nvars' {
             if "`by'" != "" {
                 if `i' == 1 {
                     local ib = 0
