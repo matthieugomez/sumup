@@ -88,7 +88,6 @@ To avoid erasing the original dataset, you can save the summary statistics as a 
 
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta)
-describe using temp.dta
 ```
 ![](img/sumcollapse2.jpg)
 
