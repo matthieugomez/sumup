@@ -95,7 +95,6 @@ describe using temp.dta
 
 
 
-One can directly 
 
 ### `sumup` is fast
 `sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
