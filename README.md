@@ -84,10 +84,10 @@ sumup hours wage, by(union married) statistics(mean p50 p90) collapse
 
 
 
-Alternatively, you can also write the result in an external dataset by using the `output` option:
+To avoid erasing the original dataset, you can save the summary statistics as a Stata dataset using the `save` option:
 
 ```
-sumup hours wage, by(union married) statistics(mean p50 p90) output(temp.dta)
+sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta)
 describe using temp.dta
 ```
 ![](img/sumcollapse2.jpg)
