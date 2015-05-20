@@ -80,6 +80,8 @@ You can replace the existing dataset by the summary statistics using the `collap
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) collapse
 ```
+![](img/sumcollapse.jpg)
+
 
 
 Alternatively, you can also write the result in an external dataset by using the `output` option:
@@ -88,7 +90,7 @@ Alternatively, you can also write the result in an external dataset by using the
 sumup hours wage, by(union married) statistics(mean p50 p90) output(temp.dta)
 describe using temp.dta
 ```
-![](img/sumcollapse.jpg)
+![](img/sumcollapse2.jpg)
 
 
 
