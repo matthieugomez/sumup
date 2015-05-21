@@ -676,14 +676,8 @@ program define Stats2, rclass
 
         * class 1 : available via -summarize, meanonly-
         * summarize.r(N) returns #obs (note capitalization)
-        if inlist("`st'", "n", "freq", "min", "mean", "max", "sum"){
-            if "`st'" == "n"{
-                local titlename Obs
-                local s N
-            }
-            else{
-                local titlename `=strproper("`st'")'
-            }
+        if inlist("`st'", "min", "mean", "max", "sum"){
+            local titlename `=strproper("`st'")'
             local names "`names' `st'"
             local titlenames `"`titlenames' `titlename'"'
             local expr  "`expr' r(`st')"
@@ -691,7 +685,16 @@ program define Stats2, rclass
             local cmd "`cmd' sum"
             continue
         }
-
+        if inlist("`st'", "n", "N"){
+            local st N
+            local titlename Obs
+            local names "`names' `st'"
+            local titlenames `"`titlenames' `titlename'"'
+            local expr  "`expr' r(`st')"
+            local class = max(`class',1)
+            local cmd "`cmd' sum"
+            continue
+        }
         if "`st'" == "range"  {
             local names "`names' range"
             local titlenames `"`titlenames' `st'"'
@@ -700,7 +703,6 @@ program define Stats2, rclass
             local cmd "`cmd' sum"
             continue
         }
-
         if "`st'" == "freq" {
             local names "`names' freq"
             local titlenames `"`titlenames' `st'"'
@@ -709,7 +711,6 @@ program define Stats2, rclass
             local cmd "`cmd' sum"
             continue
         }
-
         if "`st'" == "missing" {
             local names "`names' missing"
             local titlenames `"`titlenames' Missing"'
