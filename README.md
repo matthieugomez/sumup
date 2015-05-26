@@ -4,6 +4,7 @@
 
 ### `sumup` prints summary statistics by group
 
+`sumup` is like `summarize` for groups.
 By default, `sumup` returns the same set of statistics than `summarize` 
 
 ```
@@ -52,7 +53,7 @@ q             | equivalent to specifying p25 p50 p75
 p??			|	any ??th percentile
 
 
-
+Instead of returning a set of scalars, sumup returns matrices.
 
 ### `sumup` accepts groups defined by several variables:
 
@@ -84,10 +85,10 @@ sumup hours wage, by(union married) statistics(mean p50 p90) collapse
 
 
 
-To avoid erasing the original dataset, you can save the summary statistics as a Stata dataset using the `save` option:
+To avoid erasing the original dataset, save the summary statistics  dataset through the `save` option:
 
 ```
-sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta)
+sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
 ```
 ![](img/sumcollapse2.jpg)
 
@@ -96,7 +97,7 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta)
 
 
 ### `sumup` is fast
-`sumup` is ten times faster than `table, contents()`; `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
+`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
 
 # fasttabstat
 `sumup` borrows heavily from `tabstat`. The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
@@ -108,5 +109,5 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta)
 
 # Installation
 ```
-net install sumup , from(https://github.com/matthieugomez/stata-sumup/raw/master/)
+net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/)
 ```
