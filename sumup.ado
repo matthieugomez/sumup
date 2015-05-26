@@ -1,4 +1,4 @@
-program sumup, rclass sortpreserve
+program sumup, rclass
 version 12.1
 syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
     save(str) replace collapse ///
@@ -10,6 +10,7 @@ syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
     SAME noSEParator  septable(string) ]
 
 
+local sorder `:sortedby'
 if ("`weight'"!="") local wt [`weight'`exp']
 
 if "`varlist'" == ""{
@@ -220,9 +221,8 @@ if "`by'" != "" {
     local touse_last=_N
 
     tempvar bylength
-    local type = cond(c(N)>c(maxlong), "double", "long")
-    bys `touse' `by' : gen `type' `bylength' = _N 
-
+    local tlength = cond(c(N)>c(maxlong), "double", "long")
+    bys `touse' `by' : gen `tlength' `bylength' = _N 
 
 
     local byn : word count `by'
@@ -592,6 +592,7 @@ else{
     matrix colnames `M' = `by'
     return matrix by = `M' 
 }
+sort `sorder'
 
 }
 end

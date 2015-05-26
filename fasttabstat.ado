@@ -176,8 +176,8 @@ program define fasttabstat, rclass byable(recall) sort
 		local touse_last=_N
 		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")	local stouse `touse'
 		tempvar bylength
-		local type = cond(c(N)>c(maxlong), "double", "long")
-		bys `stouse' `by' : gen `type' `bylength' = _N if _n==1 
+		local tlength = cond(c(N)>c(maxlong), "double", "long")
+		bys `stouse' `by' : gen `tlength' `bylength' = _N if _n==1 
 		local bytype : type `by'
 		local iby = 0
 		scalar start = `touse_first'
