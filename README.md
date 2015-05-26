@@ -2,9 +2,8 @@
 
 
 
-### `sumup` prints summary statistics by group
+### `sumup` can `summarize` by group
 
-`sumup` is like `summarize` for groups.
 By default, `sumup` returns the same set of statistics than `summarize` 
 
 ```
@@ -18,6 +17,27 @@ With the option `detail`, `sumup` returns detailed statistics:
 sumup wage, by(industry) detail
 ```
 ![](img/sumdetail.jpg)
+
+
+
+### `sumup` accepts groups defined by several variables:
+
+`sumup` can compute summary statistics for groups defined by multiple variables:
+
+```
+sumup wage, by(union married) 
+```
+![](img/sumgroups.jpg)
+
+This is both faster and simpler than using `group` in a first step
+
+This makes `sumup` a useful extension of `tabulate`:
+
+```
+sumup, by(union married) 
+```
+![](img/sumtab.jpg)
+
 
 
 ### `sumup` is flexible
@@ -55,22 +75,6 @@ p??			|	any ??th percentile
 
 Instead of returning a set of scalars, sumup returns matrices.
 
-### `sumup` accepts groups defined by several variables:
-
-`sumup` can compute summary statistics for groups defined by multiple variables:
-
-```
-sumup wage, by(union married) 
-```
-![](img/sumgroups.jpg)
-
-
-This makes `sumup` a useful extension of `tabulate`:
-
-```
-sumup, by(union married) 
-```
-![](img/sumtab.jpg)
 
 
 
