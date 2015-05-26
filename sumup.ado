@@ -1,16 +1,22 @@
 program sumup, rclass
 version 12.1
 syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
-    save(str) replace collapse ///
-    Detail Statistics(str) STATS(str)  ///
-    Missing noTotal ///
-    seps(numlist) ///
-    CASEwise Format Format2(str) ///
-    LAbelwidth(int -1) VArwidth(int -1) ///
-    SAME noSEParator  septable(string) ]
+save(str) replace collapse ///
+Detail Statistics(str) STATS(str)  ///
+Missing noTotal ///
+seps(numlist) ///
+CASEwise Format Format2(str) ///
+LAbelwidth(int -1) VArwidth(int -1) ///
+SAME noSEParator  septable(string) ]
 
 
 local sorder `:sortedby'
+if "`sorder'" == ""{
+    tempvar index
+    gen double `index' = _n
+}
+
+
 if ("`weight'"!="") local wt [`weight'`exp']
 
 if "`varlist'" == ""{
@@ -593,7 +599,9 @@ else{
     return matrix by = `M' 
 }
 }
-sort `sorder'
+if "`collapse'" == "" {
+    sort `sorder'
+}
 end
 
 /***************************************************************************************************
