@@ -592,9 +592,8 @@ else{
     matrix colnames `M' = `by'
     return matrix by = `M' 
 }
-sort `sorder'
-
 }
+sort `sorder'
 end
 
 /***************************************************************************************************
