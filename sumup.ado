@@ -1,10 +1,13 @@
-program sumup, rclass 
+program sumup, rclass sortpreserve
 version 12.1
-syntax [varlist(default=none)] [if] [in] [aweight fweight] [, Detail by(varlist) save(str) replace Statistics(str)  seps(numlist) /*
-*/     CASEwise Format Format2(str) /*
-*/      LAbelwidth(int -1) VArwidth(int -1)  Missing /*
-*/      SAME noSEParator noTotal septable(string) /*
-*/ collapse]
+syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
+    save(str) replace collapse ///
+    Detail Statistics(str) STATS(str)  ///
+    Missing noTotal ///
+    seps(numlist) ///
+    CASEwise Format Format2(str) ///
+    LAbelwidth(int -1) VArwidth(int -1) ///
+    SAME noSEParator  septable(string) ]
 
 
 if ("`weight'"!="") local wt [`weight'`exp']
@@ -31,8 +34,7 @@ if "`casewise'" != "" {
 
 if `"`stats'"' != "" {
     if `"`statistics'"' != "" {
-        di as err /*
-        */ "may not specify both statistics() and stats() options"
+        di as error  "may not specify both statistics() and stats() options"
         exit 198
     }
     local statistics `"`stats'"'
@@ -218,7 +220,8 @@ if "`by'" != "" {
     local touse_last=_N
 
     tempvar bylength
-    bys `touse' `by' : gen `bylength' = _N 
+    local type = cond(c(N)>c(maxlong), "double", "long")
+    bys `touse' `by' : gen `type' `bylength' = _N 
 
 
 
