@@ -8,13 +8,13 @@ By default, `sumup` returns the same set of statistics than `summarize`
 
 ```
 sysuse nlsw88.dta, clear
-sumup wage, by(race) 
+sumup hours, by(race) 
 ```
 ![](img/sum.jpg)
 
 With the option `detail`, `sumup` returns detailed statistics:
 ```
-sumup wage, by(industry) detail
+sumup hours, by(industry) detail
 ```
 ![](img/sumdetail.jpg)
 
@@ -25,7 +25,7 @@ sumup wage, by(industry) detail
 `sumup` can compute summary statistics for groups defined by multiple variables:
 
 ```
-sumup wage, by(union married) 
+sumup hours, by(union married) 
 ```
 ![](img/sumgroups.jpg)
 
