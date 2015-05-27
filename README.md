@@ -44,7 +44,7 @@ sumup, by(union married)
 
 The option `statistics` allows to specify a set of statistics:
 ```
-sumup wage, by(industry) statistics(mean p80)
+sumup hours, by(industry) statistics(mean p80)
 ```
 ![](img/sumstat.jpg)
 
