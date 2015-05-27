@@ -16,19 +16,19 @@ end
 
 program define sumup2, sortpreserve
 version 12.1
-inner `0'
+innersumup `0'
 end
 
 program define sumup2collapse
 version 12.1
-inner `0'
+innersumup `0'
 end
 
 
 /***************************************************************************************************
 
 ***************************************************************************************************/
-program define inner, rclass
+program define innersumup, rclass
     version 12.1
     syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
     save(str) replace collapse ///
