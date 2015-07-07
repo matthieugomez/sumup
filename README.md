@@ -115,3 +115,7 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 ```
 net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/)
 ```
+
+# Reference
+`sum_up` heavily borrows code from `tabstat`, speeding up the slow parts. The tabstat command was written by Jeroen Weesie and Vincent Buskens both of the Department of Sociology at Utrecht University, The Netherlands.
+
