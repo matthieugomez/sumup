@@ -3,25 +3,25 @@ The code for sumup is basically a fork of tabstat. The tabstat command was writt
 ***************************************************************************************************/
 
 program define sumup
-version 12.1
-syntax anything, [collapse *]
+    version 12.1
+    syntax anything, [collapse *]
 
-if "`collapse'" ~= ""{
-   sumup2collapse `anything', `options'
-}
-else{
-   sumup2 `anything', `options'
-}
+    if "`collapse'" ~= ""{
+     sumup2collapse `anything', `options'
+ }
+ else{
+     sumup2 `anything', `options'
+ }
 end
 
 program define sumup2, sortpreserve
-version 12.1
-innersumup `0'
+    version 12.1
+    innersumup `0'
 end
 
 program define sumup2collapse
-version 12.1
-innersumup `0'
+    version 12.1
+    innersumup `0'
 end
 
 
@@ -161,12 +161,24 @@ program define innersumup, rclass
         tokenize `by'
         local maxlength 0
         forval ib = 1/`nby'{
-            local b`ib' ``ib'' 
-            local bytype`ib': type ``ib''
+            local byfullname`ib' ``ib''
+            capture confirm numeric variable  ``ib'' 
+            if _rc {
+                * by-variable is string => generate a numeric version
+                tempvar b`ib'
+                tempname bylabel
+                egen `b`ib''=group(``ib''), lname(`bylabel')
+                local blabel`ib' `bylabel'
+            }
+            else{
+                local b`ib' ``ib'' 
+                local blabel`ib' `:value label `b`ib''' 
+            }
+            local bytype`ib': type `b`ib''
             local isstring`ib' = regexm("`bytype`ib''", "str")
-            local for`ib': format ``ib''
+            local for`ib': format `b`ib''
             local maxlength`ib' 0
-            local lab`ib' `: value label ``ib'''
+            local lab`ib' `: value label `b`ib'''
             local istime`ib' = 0
             if "lab`ib'" == "" {
                 if `isstring`ib'' == 0 {
@@ -393,7 +405,12 @@ program define innersumup, rclass
                 forval ib = 1/`nby'{
                     matrix `M`ib''[`ig', 1] =  `b`ib''[`start']
                     forval ib = 1/`nby'{
-                        local lab`ib'`ig' `"`: label (`b`ib'') `=`b`ib''[`start']''"'
+                        if "`blabel`ib''"~= ""{
+                            local lab`ib'`ig' `"`: label `blabel`ib'' `=`b`ib''[`start']''"'
+                        }
+                        else{
+                            local lab`ib'`ig' `"`=`b`ib''[`start']'"'
+                        }
                         local maxlength`ib' = max(strlen(`"`lab`ib'`ig''"'),`maxlength`ib'')
                     }
                 }
@@ -488,7 +505,7 @@ program define innersumup, rclass
                     local byw`ib' = max(`byw`ib'', 6)
                 }
                 local byw = `byw' + `byw`ib'' + 1
-                local byname`ib' = abbrev("`b`ib''",`byw`ib'')
+                local byname`ib' = abbrev("`byfullname`ib''",`byw`ib'')
             }
         }
         * number of chars in display format
