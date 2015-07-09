@@ -31,7 +31,7 @@ sumup hours, by(union married)
 
 This is both faster and simpler than using `group` in a first step
 
-`tabulate` groups defined by multiple variables:
+Count the number of observations by groups defined by multiple variables:
 
 ```
 sumup, by(union married) 
