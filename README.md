@@ -2,7 +2,7 @@
 
 
 
-### `sumup` can `summarize` by group
+### `sumup`  = `summarize` by group
 
 By default, `sumup` returns the same set of statistics than `summarize` 
 
@@ -22,7 +22,7 @@ sumup hours, by(industry) detail
 
 ### `sumup` accepts groups defined by several variables:
 
-`sumup` can compute summary statistics for groups defined by multiple variables:
+`sumup` computes summary statistics for groups defined by multiple variables:
 
 ```
 sumup hours, by(union married) 
@@ -103,13 +103,6 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 ### `sumup` is fast
 `sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
 
-# fasttabstat
-`sumup` borrows heavily from `tabstat`. The command `fasttabstat` is a drop-in version of `tabstat`, with two advantages:
-- `fasttabstat`  is 10x faster than `tabstat`.
-- `fasttabstat` accepts more statistics than `tabstat` : 
-	- any percentile 
-	- `missing` : number of missing observations.
-
 
 # Installation
 ```
@@ -117,5 +110,5 @@ net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/
 ```
 
 # Reference
-`sum_up` heavily borrows code from `tabstat`, speeding up the slow parts. The tabstat command was written by Jeroen Weesie and Vincent Buskens both of the Department of Sociology at Utrecht University, The Netherlands.
+`sum_up` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in, faster version of `tabstat`. The tabstat command was written by Jeroen Weesie and Vincent Buskens both of the Department of Sociology at Utrecht University, The Netherlands.
 

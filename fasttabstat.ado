@@ -1,17 +1,11 @@
-
-/***************************************************************************************************
-helper: modified version of tabstat to
-(i) add any percentiles, freq (all) and nmissing in the list of statistics
-(ii) use binscatter characterize_unique_vals_sorted for speed
-***************************************************************************************************/
-cap program drop fasttabstat
+*! version 2.8.4  31may2013 
 program define fasttabstat, rclass byable(recall) sort
 	version 8, missing
 
 	syntax varlist(numeric) [if] [in] [aw fw] [ , /*
-	*/      BY(varname) CASEwise Columns(str) Format Format2(str) /*
-	*/      LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
-	*/      SAME SAVE noSEParator Statistics(str) STATS(str) noTotal septable(string)]
+	*/ 	BY(varname) CASEwise Columns(str) Format Format2(str) /*
+	*/ 	LAbelwidth(int -1) VArwidth(int -1) LOngstub Missing /*
+	*/ 	SAME SAVE noSEParator Statistics(str) STATS(str) noTotal ]
 
 	if "`casewise'" != "" {
 		local same same
@@ -58,7 +52,7 @@ program define fasttabstat, rclass byable(recall) sort
 	}
 	else {
 		di as err `"column(`columns') invalid -- specify "' /*
-		*/ "column(variables) or column(statistics)"
+			*/ "column(variables) or column(statistics)"
 		exit 198
 	}
 
@@ -72,7 +66,7 @@ program define fasttabstat, rclass byable(recall) sort
 	else if !inrange(`varwidth',8,16) {
 		local varwidth = clip(`varwidth',8,16)
 		dis as txt ///
-		"(option varwidth() outside valid range 8..16; `varwidth' assumed)"
+	    "(option varwidth() outside valid range 8..16; `varwidth' assumed)"
 	}
 
 	if `labelwidth' == -1 {
@@ -81,7 +75,7 @@ program define fasttabstat, rclass byable(recall) sort
 	else if !inrange(`labelwidth',8,32) {
 		local labelwidth = clip(`labelwidth',8,32)
 		dis as txt ///
-		"(option labelwidth() outside valid range 8..32; `labelwidth' assumed)"
+	"(option labelwidth() outside valid range 8..32; `labelwidth' assumed)"
 	}
 
 	* sample selection
@@ -125,21 +119,15 @@ program define fasttabstat, rclass byable(recall) sort
 
 	* Statistics
 
-	Stats2 `statistics'
+	Stats `statistics'
 	local stats   `r(names)'
 	local expr    `r(expr)'
-	local cmd    `r(cmd)'
 	local summopt `r(summopt)'
-	local pctileopt `r(pctileopt)'
 	local nstats : word count `stats'
 
 	tokenize `expr'
 	forvalues i = 1/`nstats' {
 		local expr`i' ``i''
-	}
-	tokenize `cmd'
-	forvalues i = 1/`nstats' {
-		local cmd`i' ``i''
 	}
 	tokenize `stats'
 	forvalues i = 1/`nstats' {
@@ -150,7 +138,7 @@ program define fasttabstat, rclass byable(recall) sort
 		}
 	}
 	if "`separator'" == "" & ( (`nstats' > 1 & "`incol'" == "variables") /*
-		*/         |(`nvars' > 1  & "`incol'" == "statistics")) {
+		     */         |(`nvars' > 1  & "`incol'" == "statistics")) {
 		local sepline yes
 	}
 
@@ -164,81 +152,61 @@ program define fasttabstat, rclass byable(recall) sort
 
 	* compute the statistics
 	* ----------------------
+	/* start of modification (fasttabstat vs tabstat) */
+	count if `touse'
+	local samplesize=r(N)
+	local touse_first=_N-`samplesize'+1
+	local touse_last=_N
 
 	if "`by'" != "" {
+		sort `touse' `by'
 		* conditional statistics are saved in matrices Stat1, Stat2, etc
-
-		* the data are sorted on by groups, putting unused obs last
-		* be careful not to change the sort order
-		count if `touse'
-		local samplesize=r(N)
-		local touse_first=_N-`samplesize'+1
-		local touse_last=_N
-		if !(`touse_first'==1 & word("`:sortedby'",1)=="`by'")	local stouse `touse'
 		tempvar bylength
 		local tlength = cond(c(N)>c(maxlong), "double", "long")
-		bys `stouse' `by' : gen `tlength' `bylength' = _N if _n==1 
+		qui by `touse' `by' : gen `tlength' `bylength' = _N if _n==1 
 		local bytype : type `by'
-		local iby = 0
-		scalar start = `touse_first'
-		while `=start' < `touse_last'{
-			scalar end = `=start' + `=`bylength'[`=start']' - 1
-			local iby = `iby' + 1
+		local iby = 1
+		local by1 = `touse_first'
+		while `by1' < `touse_last'{
+			local by2 = `by1' + `=`bylength'[`by1']' - 1
+	
 			tempname Stat`iby'
 			mat `Stat`iby'' = J(`nstats',`nvars',0)
 			mat colnames `Stat`iby'' = `varlist'
 			mat rownames `Stat`iby'' = `stats'
-			local byval  `=`by'[`=start']'
-			*loop over all variables
+
+			* loop over all variables
 			forvalues i = 1/`nvars' {
-				if regexm("`cmd'", "sum") {
-					qui summ `var`i'' in `=start'/`=end' `wght', `summopt'
-					forvalues is = 1/`nstats' {
-						if "`cmd`is''" == "sum"{
-							if "`name`is''"== "freq"{
-								mat `Stat`iby''[`is',`i'] = `=end' - `=start' +1
-							}
-							else if  "`name`is''"== "nmissing"{
-								mat `Stat`iby''[`is',`i'] = `=end' - `=start' + 1 - `expr`is''
-							}
-							else{
-								mat `Stat`iby''[`is',`i'] = `expr`is''
-							}
-						}
-					}
+				qui summ `var`i'' in `by1'/`by2' `wght', `summopt'
+				forvalues is = 1/`nstats' {
+					mat `Stat`iby''[`is',`i'] = `expr`is''
 				}
-				if "`pctileopt'" ~= ""{
-					qui _pctile `var`i'' in `=start'/`=end' `wght', p(`pctileopt')
-					forvalues is = 1/`nstats' {
-						if "`cmd`is''" == "_pctile"{
-							mat `Stat`iby''[`is',`i'] = `expr`is''
-						}
-					}
-				}
-			}   
-
-
-
+			}
 
 			* save label for groups in lab1, lab2 etc
 			if substr("`bytype'",1,3) != "str" {
-				local lab`iby' : label (`by') `byval'
+				local iby1 = `by'[`by1']
+				local lab`iby' : label (`by') `iby1'
 			}
 			else {
-				/* 32 = max value of `labelwidth'               */
-				/* We record c(maxvallablen) because of r()     */
-				/* We use -display- to expand char(0) to \0     */
-				local lab`iby' : di (substr(`byval', 1, c(maxvlabellen)))
+				/* 32 = max value of `labelwidth' 		*/
+				/* We record c(maxvallablen) because of r()	*/
+				/* We use -display- to expand char(0) to \0	*/
+				local lab`iby' : di (substr(`by'[`by1'], 1, c(maxvlabellen)))
 			}
-			scalar start = `=end' + 1
+
+			local iby = `iby' + 1
+			local by1 = `by2' + 1
 		}
-		local nby `iby'
+		local nby = `iby' - 1
+		/* end of modification (fasttabstat vs tabstat) */
 	}
 	else {
 		local nby 0
 	}
 
 	if "`total'" == "" {
+		sort `touse'
 		* unconditional (Total) statistics are stored in Stat`nby+1'
 		local iby = `nby'+1
 
@@ -248,29 +216,9 @@ program define fasttabstat, rclass byable(recall) sort
 		mat rownames `Stat`iby'' = `stats'
 
 		forvalues i = 1/`nvars' {
-			if regexm("`cmd'", "sum") {
-				qui summ `var`i'' `wght' if `touse' == 1, `summopt'
-				forvalues is = 1/`nstats' {
-					if "`cmd`is''" == "sum"{
-						if "`name`is''"== "freq"{
-							mat `Stat`iby''[`is',`i'] = _N
-						}
-						else if  "`name`is''"== "nmissing"{
-							mat `Stat`iby''[`is',`i'] = _N - `expr`is''
-						}
-						else{
-							mat `Stat`iby''[`is',`i'] = `expr`is''
-						}
-					}
-				}
-			}
-			if "`pctileopt'" ~= ""{
-				qui _pctile `var`i'' `wght' if `touse' == 1, p(`pctileopt')
-				forvalues is = 1/`nstats' {
-					if "`cmd`is''" == "_pctile"{
-						mat `Stat`iby''[`is',`i'] = `expr`is''
-					}
-				}
+			qui summ `var`i'' in `touse_first'/`touse_last' `wght' , `summopt'
+			forvalues is = 1/`nstats' {
+				mat `Stat`iby''[`is',`i'] = `expr`is''
 			}
 		}
 		local lab`iby' "Total"
@@ -331,7 +279,7 @@ program define fasttabstat, rclass byable(recall) sort
 
 	if "`incol'" == "statistics" {
 		local lleft = (1 + `byw')*("`by'"!="") + ///
-		(`varwidth'+1)*("`descr'"!="")
+				(`varwidth'+1)*("`descr'"!="")
 	}
 	else {
 		local lleft = (1 + `byw')*("`by'"!="") + (8+1)*("`descr'"!="")
@@ -341,39 +289,17 @@ program define fasttabstat, rclass byable(recall) sort
 	local lsize = c(linesize)
 	* number of non-label elements in the row of a block
 	local neblock = int((`lsize' - `cbar')/10)
-	if "`seps'" == ""{
-	    * number of blocks if stats horizontal
-	    local nsblock  = 1 + int((`nstats'-1)/`neblock')
-	    local is20  0 
-	    forvalues i = 1/`nsblock' {
-	        local is1`i' `=`is2`=`i'-1''+1'
-	        local is2`i' `=min(`nstats', `is1`i'' + `neblock' - 1)'
-	    }
-	    * number of blocks if variables horizontal
-	    local nvblock  = 1 + int((`nvars'-1)/`neblock')
-	    local i20  0 
-	    forvalues i = 1/`nvblock' {
-	        local i1`i' `=`i2`=`i'-1''+1'
-	        local i2`i' `=min(`nvars', `i1`i'' + `neblock' - 1)'
-	    }
-	}
-	else{
-	    local seps `seps' `nstats'
-	    local nsblock : word count `seps'
-	    local is20  0 
-	    forvalues i = 1/`nsblock' {
-	        local is1`i' `=`is2`=`i'-1''+1'
-	        local is2`i' `: word `i' of `seps''
-	    }
-	    local nvblock : word count `seps'
-	    local i20  0 
-	    forvalues i = 1/`nsblock' {
-	        local i1`i' `=`i2`=`i'-1''+1'
-	        local i2`i' `: word `i' of `seps''
-	    }
-	}
+	* number of blocks if stats horizontal
+	local nsblock  = 1 + int((`nstats'-1)/`neblock')
+	* number of blocks if variables horizontal
+	local nvblock  = 1 + int((`nvars'-1)/`neblock')
 
-	
+	if "`descr'" != "" & "`by'" != "" {
+		local byalign lalign
+	}
+	else {
+		local byalign ralign
+	}
 
 	* display results
 	* ---------------
@@ -381,7 +307,7 @@ program define fasttabstat, rclass byable(recall) sort
 	if "`incol'" == "statistics" {
 
 		* display the results: horizontal = statistics (block wise)
-		/*         
+
 		if "`descr'" == "" {
 			di as txt _n `"Summary for variables: `varlist'"'
 			if "`by'" != "" {
@@ -392,30 +318,31 @@ program define fasttabstat, rclass byable(recall) sort
 				di as txt _col(6) `"by categories of: `by' `bylabel'"'
 			}
 		}
-		*/
 		di
 
 		* loop over all nsblock blocks of statistics
 
 		local is2 0
 		forvalues isblock = 1/`nsblock' {
+
 			* is1..is2 are indices of statistics in a block
 			local is1 = `is2' + 1
 			local is2 = min(`nstats', `is1'+`neblock'-1)
+
 			* display header
 			if "`by'" != "" {
 				local byname = abbrev("`by'",`byw')
-			di as txt "{`byalign' `byw':`byname'} {...}"
+				di as txt "{`byalign' `byw':`byname'} {...}"
 			}
 			if "`descr'" != "" {
-			di as txt "{ralign `varwidth':variable} {...}"
+				di as txt "{ralign `varwidth':variable} {...}"
 			}
-		di as txt "{c |}" _c
+			di as txt "{c |}" _c
 			forvalues is = `is1'/`is2' {
 				di as txt %`colwidth's "`name`is''" _c
 			}
 			local ndash = `colwidth'*(`is2'-`is1'+1)
-		di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
+			di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
 
 			* loop over the categories of -by- (1..nby) and -total- (nby+1)
 			local nbyt = `nby' + ("`total'" == "")
@@ -435,36 +362,36 @@ program define fasttabstat, rclass byable(recall) sort
 										capture local if_time_for = index("`for'", "%t")
 										if `if_date_for' > 0 | `if_time_for' > 0 {
 											local date_for : display `for' `lab'
-										di in txt `"{`byalign' `byw':`date_for'} {...}"'
+											di in txt `"{`byalign' `byw':`date_for'} {...}"'
 										}
 										else {
 											/* okay for strLs */
-										di in txt `"{`byalign' `byw':`lab'} {...}"'
+											di in txt `"{`byalign' `byw':`lab'} {...}"'
 										}
 
 									}
 									else {
-									di in txt `"{`byalign' `byw':`lab'} {...}"'
+										di in txt `"{`byalign' `byw':`lab'} {...}"'
 									}
 								}
 								else {
-								di in txt `"{`byalign' `byw':`lab'} {...}"'
+									di in txt `"{`byalign' `byw':`lab'} {...}"'
 								}
 
 							}
 							else {
-							di in txt `"{`byalign' `byw':`lab'} {...}"'
+								di in txt `"{`byalign' `byw':`lab'} {...}"'
 							}
 						}
 						else {
-						di "{space `byw'} {...}"
+							di "{space `byw'} {...}"
 						}
 					}
 					if "`descr'" != "" {
 						local avn = abbrev("`var`i''",`varwidth')
-					di as txt "{ralign `varwidth':`avn'} {...}"
+						di as txt "{ralign `varwidth':`avn'} {...}"
 					}
-				di as txt "{c |}{...}"
+					di as txt "{c |}{...}"
 					forvalues is = `is1'/`is2' {
 						local s : display `fmt`i'' `Stat`iby''[`is',`i']
 						di as res %`colwidth's "`s'" _c
@@ -472,10 +399,10 @@ program define fasttabstat, rclass byable(recall) sort
 					di
 				}
 				if (`iby' >= `nbyt') {
-				di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
+					di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
 				}
 				else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`total'" == "")) {
-				di as txt "{hline `lleft'}{c +}{hline `ndash'}"
+					di as txt "{hline `lleft'}{c +}{hline `ndash'}"
 				}
 			}
 
@@ -510,18 +437,18 @@ program define fasttabstat, rclass byable(recall) sort
 
 			* display header
 			if "`by'" != "" {
-			di as txt "{`byalign' `byw':`by'} {...}"
+				di as txt "{`byalign' `byw':`by'} {...}"
 			}
 			if "`descr'" != "" {
-			di as txt "   stats {...}"
+				di as txt "   stats {...}"
 			}
-		di as txt "{c |}{...}"
+			di as txt "{c |}{...}"
 			forvalues i = `i1'/`i2' {
 				* here vars are abbreviated to 8 chars
 				di as txt %`colwidth's abbrev("`var`i''",8) _c
 			}
 			local ndash = (`ndigit'+1)*(`i2'-`i1'+1)
-		di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
+			di as txt _n "{hline `lleft'}{c +}{hline `ndash'}"
 
 			* loop over the categories of -by- (1..nby) and -total- (nby+1)
 			local nbyt = `nby' + ("`total'" == "")
@@ -530,17 +457,17 @@ program define fasttabstat, rclass byable(recall) sort
 					if "`by'" != "" {
 						if `is' == 1 {
 							local lab = substr(`"`lab`iby''"', 1, `byw')
-						di as txt `"{`byalign' `byw':`lab'} {...}"'
+							di as txt `"{`byalign' `byw':`lab'} {...}"'
 						}
 						else {
-						di as txt "{space `byw'} {...}"
+							di as txt "{space `byw'} {...}"
 						}
 					}
 					if "`descr'" != "" {
 						* names of statistics are at most 8 chars
-					di as txt `"{ralign 8:`name`is''} {...}"'
+						di as txt `"{ralign 8:`name`is''} {...}"'
 					}
-				di as txt "{c |}{...}"
+					di as txt "{c |}{...}"
 					forvalues i = `i1'/`i2' {
 						local s : display `fmt`i'' `Stat`iby''[`is',`i']
 						di as res %`colwidth's "`s'" _c
@@ -548,10 +475,10 @@ program define fasttabstat, rclass byable(recall) sort
 					di
 				}
 				if (`iby' >= `nbyt') {
-				di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
+					di as txt "{hline `lleft'}{c BT}{hline `ndash'}"
 				}
 				else if ("`sepline'" != "") | ((`iby'+1 == `nbyt') & ("`total'" == "")) {
-				di as txt "{hline `lleft'}{c +}{hline `ndash'}"
+					di as txt "{hline `lleft'}{c +}{hline `ndash'}"
 				}
 			} /* forvalues iby */
 
@@ -565,44 +492,40 @@ program define fasttabstat, rclass byable(recall) sort
 	* ---------------------------------------
 
 	if "`save'" != "" {
-		if "`save'" != "" {
-			if "`total'" == "" {
-				local iby = `nby'+1
-				if _caller() < 9 {
-					return matrix StatTot `Stat`iby''
-				}
-				else {
-					return matrix StatTotal `Stat`iby''
-				}
+		if "`total'" == "" {
+			local iby = `nby'+1
+			if _caller() < 9 {
+				return matrix StatTot `Stat`iby''
 			}
+			else {
+				return matrix StatTotal `Stat`iby''
+			}
+		}
 
-			if "`by'" == "" {
-				exit
-			}
-			forvalues iby = 1/`nby' {
-				return matrix Stat`iby' `Stat`iby''
-				return local  name`iby' `"`lab`iby''"'
-			}
+		if "`by'" == "" {
+			exit
+		}
+		forvalues iby = 1/`nby' {
+			return matrix Stat`iby' `Stat`iby''
+			return local  name`iby' `"`lab`iby''"'
 		}
 	}
 end
 
-/***************************************************************************************************
-Modified helper function from tabstat
+* ---------------------------------------------------------------------------
+* subroutines
+* ---------------------------------------------------------------------------
 
 /* Stats str
-processes the contents() option. It returns in
-r(names)   -- names of statistics, separated by blanks
-r(expr)    -- r() expressions for statistics, separated by blanks
-r(summopt) -- option for summarize command (meanonly, detail)
-***************************************************************************************************/
+   processes the contents() option. It returns in
+     r(names)   -- names of statistics, separated by blanks
+     r(expr)    -- r() expressions for statistics, separated by blanks
+     r(summopt) -- option for summarize command (meanonly, detail)
 
-
-note: if you add statistics, ensure that the name of the statistic
-is at most 8 chars long.
+   note: if you add statistics, ensure that the name of the statistic
+   is at most 8 chars long.
 */
-cap program drop Stats2
-program define Stats2, rclass
+program define Stats, rclass
 	if `"`0'"' == "" {
 		local opt "mean"
 	}
@@ -613,12 +536,11 @@ program define Stats2, rclass
 	* ensure that order of requested statistics is preserved
 	* invoke syntax for each word in input
 	local class 0
-	local nq 0
 	foreach st of local opt {
 		local 0 = lower(`", `st'"')
 
-		capt syntax [, n freq nmissing MEan sd Variance SUm COunt MIn MAx Range SKewness Kurtosis /*
-		*/  SDMean SEMean p1 p5 p10 p25 p50 p75 p90 p95 p99 iqr q MEDian CV *]
+		capt syntax [, n MEan sd Variance SUm COunt MIn MAx Range SKewness Kurtosis /*
+			*/  SDMean SEMean p1 p5 p10 p25 p50 p75 p90 p95 p99 iqr q MEDian CV ]
 		if _rc {
 			di in err `"unknown statistic: `st'"'
 			exit 198
@@ -627,6 +549,10 @@ program define Stats2, rclass
 		if "`median'" != "" {
 			local p50 p50
 		}
+		if "`count'" != "" {
+			local n n
+		}
+
 		* class 1 : available via -summarize, meanonly-
 
 		* summarize.r(N) returns #obs (note capitalization)
@@ -638,33 +564,12 @@ program define Stats2, rclass
 			local names "`names' `s'"
 			local expr  "`expr' r(`s')"
 			local class = max(`class',1)
-			local cmd "`cmd' sum"
-			continue
 		}
 		if "`range'" != "" {
 			local names "`names' range"
 			local expr  "`expr' r(max)-r(min)"
 			local class = max(`class',1)
-			local cmd "`cmd' sum"
-			continue
 		}
-
-		if "`freq'" != "" {
-			local names "`names' freq"
-			local expr  "`expr' r(N)"
-			local class = max(`class',1)
-			local cmd "`cmd' sum"
-			continue
-		}
-
-		if "`nmissing'" != "" {
-			local names "`names' nmissing"
-			local expr  "`expr' r(N)"
-			local class = max(`class',1)
-			local cmd "`cmd' sum"
-			continue
-		}
-
 
 		* class 2 : available via -summarize-
 
@@ -672,29 +577,21 @@ program define Stats2, rclass
 			local names "`names' sd"
 			local expr  "`expr' r(sd)"
 			local class = max(`class',2)
-			local cmd "`cmd' sum"
-			continue
 		}
 		if "`sdmean'" != "" | "`semean'"!="" {
 			local names "`names' se(mean)"
 			local expr  "`expr' r(sd)/sqrt(r(N))"
 			local class = max(`class',2)
-			local cmd "`cmd' sum"
-			continue
 		}
 		if "`variance'" != "" {
 			local names "`names' variance"
 			local expr  "`expr' r(Var)"
 			local class = max(`class',2)
-			local cmd "`cmd' sum"
-			continue
 		}
 		if "`cv'" != "" {
 			local names "`names' cv"
 			local expr  "`expr' (r(sd)/r(mean))"
 			local class = max(`class',2)
-			local cmd "`cmd' sum"
-			continue
 		}
 
 		* class 3 : available via -detail-
@@ -704,48 +601,26 @@ program define Stats2, rclass
 			local names "`names' `s'"
 			local expr  "`expr' r(`s')"
 			local class = max(`class',3)
-			local cmd "`cmd' sum"
-			continue
 		}
 		if "`iqr'" != "" {
 			local names "`names' iqr"
 			local expr  "`expr' r(p75)-r(p25)"
 			local class = max(`class',3)
-			local cmd "`cmd' sum"
-			continue
 		}
 		if "`q'" != "" {
 			local names "`names' p25 p50 p75"
 			local expr  "`expr' r(p25) r(p50) r(p75)"
 			local class = max(`class',3)
-			local cmd "`cmd' sum"
-			continue
-		}
-
-		if regexm("`options'","p[0-9]*"){
-			local quantile `=regexr("`options'", "p", "")'
-			local nq = `nq' + 1
-			local names "`names' `options'"
-			local expr "`expr' r(r`nq')"
-			local pctileopt "`pctileopt' `quantile'"
-			local cmd "`cmd' _pctile"
 		}
 	}
 
-
-
-
-	if `class' == 1 {
-		local summopt "meanonly"
-	}
-	else if `class' == 3 {
-		local summopt "detail"
-	}
 	return local names `names'
 	return local expr  `expr'
-	return local cmd  `cmd'
-	return local summopt `summopt'
-	return local pctileopt  `pctileopt'
+	if `class' == 1 {
+		return local summopt "meanonly"
+	}
+	else if `class' == 3 {
+		return local summopt "detail"
+	}
 end
-
-
+exit

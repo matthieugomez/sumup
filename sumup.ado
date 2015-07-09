@@ -1,5 +1,5 @@
 /***************************************************************************************************
-The code for sumup is basically a fork of tabstat. The tabstat command was written by Jeroen Weesie and Vincent Buskens both of the Department of Sociology at Utrecht University, The Netherlands.
+The code for sumup is basically a fork of tabstat.
 ***************************************************************************************************/
 
 program define sumup
@@ -162,18 +162,10 @@ program define innersumup, rclass
         local maxlength 0
         forval ib = 1/`nby'{
             local byfullname`ib' ``ib''
-            capture confirm numeric variable  ``ib'' 
-            if _rc {
-                * by-variable is string => generate a numeric version
-                tempvar b`ib'
-                tempname bylabel
-                egen `b`ib''=group(``ib''), lname(`bylabel')
-                local blabel`ib' `bylabel'
-            }
-            else{
-                local b`ib' ``ib'' 
-                local blabel`ib' `:value label `b`ib''' 
-            }
+    
+            local b`ib' ``ib'' 
+            local blabel`ib' `:value label `b`ib''' 
+        
             local bytype`ib': type `b`ib''
             local isstring`ib' = regexm("`bytype`ib''", "str")
             local for`ib': format `b`ib''
@@ -345,7 +337,6 @@ program define innersumup, rclass
                     }
                 }
             }   
-
             if "`save'"==""{
                 tempname Stat`ig'
                 mat `Stat`ig'' = `Stat'
@@ -393,19 +384,15 @@ program define innersumup, rclass
 
         if `nby'{
             * only do it if no collapse. This also means only a few groups
-            forval ib = 1/`nby'{
-                tempname M`ib'
-                matrix `M`ib'' = J(`ng',1,.)
-            }
             local start = `touse_first'
             local ig = 0
             while `start' < `touse_last'{
                 local ++ig
                 local end = `start' + `=`bylength'[`start']' - 1
                 forval ib = 1/`nby'{
-                    matrix `M`ib''[`ig', 1] =  `b`ib''[`start']
+                    * cap because string matrix does not exist
                     forval ib = 1/`nby'{
-                        if "`blabel`ib''"~= ""{
+                        if "`blabel`ib''" ~= ""{
                             local lab`ib'`ig' `"`: label `blabel`ib'' `=`b`ib''[`start']''"'
                         }
                         else{
@@ -652,9 +639,6 @@ program define innersumup, rclass
             foreach ig of numlist `ng'/1 {
                 return matrix Stat`ig' = `Stat`ig''
             }
-            foreach ib of numlist `nby'/1{
-                return matrix by`ib' = `M`ib''
-            } 
         }
     }
 end
