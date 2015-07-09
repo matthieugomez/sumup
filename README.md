@@ -4,7 +4,7 @@
 
 ### `sumup`  = `summarize` by group
 
-By default, `sumup` returns the same set of statistics than `summarize` 
+`sumup` returns the same set of statistics than `summarize`, but computes them by group
 
 ```
 sysuse nlsw88.dta, clear
@@ -22,7 +22,7 @@ sumup hours, by(industry) detail
 
 ### `sumup` accepts groups defined by several variables:
 
-`sumup` computes summary statistics for groups defined by multiple variables:
+Compute summary statistics for groups defined by multiple variables:
 
 ```
 sumup hours, by(union married) 
@@ -31,7 +31,7 @@ sumup hours, by(union married)
 
 This is both faster and simpler than using `group` in a first step
 
-This makes `sumup` a useful extension of `tabulate`:
+`tabulate` groups defined by multiple variables:
 
 ```
 sumup, by(union married) 
@@ -42,7 +42,7 @@ sumup, by(union married)
 
 ### `sumup` is flexible
 
-The option `statistics` allows to specify a set of statistics:
+Specify any set of statistics using the option `statistics`
 ```
 sumup hours, by(industry) statistics(mean p80)
 ```
@@ -81,7 +81,7 @@ Instead of returning a set of scalars, sumup returns matrices.
 
 ### `sumup` can `collapse` to an external dataset
 
-You can replace the existing dataset by the summary statistics using the `collapse` option
+Replace the existing dataset by the summary statistics using the `collapse` option
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) collapse
 ```
