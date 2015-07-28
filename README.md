@@ -29,7 +29,6 @@ sumup hours, by(union married)
 ```
 ![](img/sumgroups.jpg)
 
-This is both faster and simpler than using `group` in a first step
 
 Count the number of observations by groups defined by multiple variables:
 
@@ -110,5 +109,4 @@ net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/
 ```
 
 # Reference
-`sum_up` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in, faster version of `tabstat`. The tabstat command was written by Jeroen Weesie and Vincent Buskens both of the Department of Sociology at Utrecht University, The Netherlands.
-
+`sum_up` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.

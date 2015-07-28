@@ -4,13 +4,13 @@ The code for sumup is basically a fork of tabstat.
 
 program define sumup
     version 12.1
-    syntax anything, [collapse *]
+    syntax [varlist(default=none)], [collapse *]
 
     if "`collapse'" ~= ""{
-     sumup2collapse `anything', `options'
+     sumup2collapse `varlist', `options'
  }
  else{
-     sumup2 `anything', `options'
+     sumup2 `varlist', `options'
  }
 end
 
