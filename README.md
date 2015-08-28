@@ -108,5 +108,12 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/)
 ```
 
+If you have a version of Stata < 13, you need to install it manually
+Click the "Download ZIP" button in the right column to download a zipfile. Extract it into a folder (e.g. ~/SOMEFOLDER)
+2. Run: (changing SOMEFOLDER with whatever you picked)
+```
+cap ado uninstall sumup
+net install sumup, from("~/SOMEFOLDER")
+
 # Reference
 `sum_up` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
