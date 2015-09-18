@@ -1,6 +1,6 @@
 v 3
 d Matthieu Gomez, Princeton University (mattg@princeton.edu)
-p sumup SUMUP - print summary statistics by groups
+p bysum BYSUM - print summary statistics by groups
 
 * l word-to-show path-or-url [description]
 * t: Directories within site:

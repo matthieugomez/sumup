@@ -1,34 +1,34 @@
 /***************************************************************************************************
-The code for sumup is basically a fork of tabstat.
+The code for bysum is basically a fork of tabstat.
 ***************************************************************************************************/
 
-program define sumup
+program define bysum
     version 12.1
     syntax [varlist(default=none)], [collapse *]
 
     if "`collapse'" ~= ""{
-     sumup2collapse `varlist', `options'
+     bysum2collapse `varlist', `options'
  }
  else{
-     sumup2 `varlist', `options'
+     bysum2 `varlist', `options'
  }
 end
 
-program define sumup2, sortpreserve
+program define bysum2, sortpreserve
     version 12.1
-    innersumup `0'
+    innerbysum `0'
 end
 
-program define sumup2collapse
+program define bysum2collapse
     version 12.1
-    innersumup `0'
+    innerbysum `0'
 end
 
 
 /***************************************************************************************************
 
 ***************************************************************************************************/
-program define innersumup, rclass
+program define innerbysum, rclass
     version 12.1
     syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
     save(str) replace collapse ///

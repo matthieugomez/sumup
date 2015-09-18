@@ -1,6 +1,6 @@
 v 3
 
-d sumup. print summary statistics by group
+d bysum. print summary statistics by group
 d
 d Author: Matthieu Gomez
 d
@@ -11,5 +11,5 @@ d Requires: Stata version 11.2
 d
 d Distribution-Date: 20150330
 d
-f sumup.ado
+f bysum.ado
 f fasttabstat.ado

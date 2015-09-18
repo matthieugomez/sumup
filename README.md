@@ -2,30 +2,30 @@
 
 
 
-### `sumup`  = `summarize` by group
+### `bysum`  = `summarize` by group
 
-`sumup` returns the same set of statistics than `summarize`, but computes them by group
+`bysum` returns the same set of statistics than `summarize`, but computes them by group
 
 ```
 sysuse nlsw88.dta, clear
-sumup hours, by(race) 
+bysum hours, by(race) 
 ```
 ![](img/sum.jpg)
 
-With the option `detail`, `sumup` returns detailed statistics:
+With the option `detail`, `bysum` returns detailed statistics:
 ```
-sumup hours, by(industry) detail
+bysum hours, by(industry) detail
 ```
 ![](img/sumdetail.jpg)
 
 
 
-### `sumup` accepts groups defined by several variables:
+### `bysum` accepts groups defined by several variables:
 
 Compute summary statistics for groups defined by multiple variables:
 
 ```
-sumup hours, by(union married) 
+bysum hours, by(union married) 
 ```
 ![](img/sumgroups.jpg)
 
@@ -33,17 +33,17 @@ sumup hours, by(union married)
 Count the number of observations by groups defined by multiple variables:
 
 ```
-sumup, by(union married) 
+bysum, by(union married) 
 ```
 ![](img/sumtab.jpg)
 
 
 
-### `sumup` is flexible
+### `bysum` is flexible
 
 Specify any set of statistics using the option `statistics`
 ```
-sumup hours, by(industry) statistics(mean p80)
+bysum hours, by(industry) statistics(mean p80)
 ```
 ![](img/sumstat.jpg)
 
@@ -72,17 +72,17 @@ q             | equivalent to specifying p25 p50 p75
 p??			|	any ??th percentile
 
 
-Instead of returning a set of scalars, sumup returns matrices.
+Instead of returning a set of scalars, bysum returns matrices.
 
 
 
 
 
-### `sumup` can `collapse` to an external dataset
+### `bysum` can `collapse` to an external dataset
 
 Replace the existing dataset by the summary statistics using the `collapse` option
 ```
-sumup hours wage, by(union married) statistics(mean p50 p90) collapse
+bysum hours wage, by(union married) statistics(mean p50 p90) collapse
 ```
 ![](img/sumcollapse.jpg)
 
@@ -91,7 +91,7 @@ sumup hours wage, by(union married) statistics(mean p50 p90) collapse
 To avoid erasing the original dataset, save the summary statistics  dataset through the `save` option:
 
 ```
-sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
+bysum hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
 ```
 ![](img/sumcollapse2.jpg)
 
@@ -99,13 +99,13 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 
 
 
-### `sumup` is fast
-`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
+### `bysum` is fast
+`bysum` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `bysum` is as fast, but more flexible, than `tabulate, summarize()`.
 
 
 # Installation
 ```
-net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/)
+net install bysum, from(https://github.com/matthieugomez/stata-bysum/raw/master/)
 ```
 
 If you have a version of Stata < 13, you need to install it manually
@@ -115,8 +115,8 @@ If you have a version of Stata < 13, you need to install it manually
 3. Run
 
 	```
-	cap ado uninstall sumup
-	net install sumup, from("~/SOMEFOLDER")
+	cap ado uninstall bysum
+	net install bysum, from("~/SOMEFOLDER")
 	```
 
 # Reference
