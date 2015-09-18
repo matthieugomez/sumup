@@ -120,4 +120,4 @@ If you have a version of Stata < 13, you need to install it manually
 	```
 
 # Reference
-`sum_up` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
+`bysum` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
