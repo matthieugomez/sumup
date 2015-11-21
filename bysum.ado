@@ -4,13 +4,15 @@ The code for bysum is basically a fork of tabstat.
 
 program define bysum
     version 12.1
-    syntax [varlist(default=none)], [collapse *]
+    syntax [varlist(default=none)] [if] [in] [aweight fweight], [collapse *]
+
+    if ("`weight'"!="") local wt [`weight'`exp']
 
     if "`collapse'" ~= ""{
-     bysum2collapse `varlist', `options'
+     bysum2collapse `varlist' `if' `in' `wt', `options'
  }
  else{
-     bysum2 `varlist', `options'
+     bysum2 `varlist' `if' `in' `wt', `options'
  }
 end
 
