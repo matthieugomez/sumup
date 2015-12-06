@@ -11,5 +11,5 @@ d Requires: Stata version 11.2
 d
 d Distribution-Date: 20150330
 d
-f bysum.ado
+f sumup.ado
 f fasttabstat.ado

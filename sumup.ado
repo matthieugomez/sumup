@@ -1,36 +1,36 @@
 /***************************************************************************************************
-The code for bysum is basically a fork of tabstat.
+The code for sumup is basically a fork of tabstat.
 ***************************************************************************************************/
 
-program define bysum
+program define sumup
     version 12.1
     syntax [varlist(default=none)] [if] [in] [aweight fweight], [collapse *]
 
     if ("`weight'"!="") local wt [`weight'`exp']
 
     if "`collapse'" ~= ""{
-     bysum2collapse `varlist' `if' `in' `wt', `options'
+     sumup2collapse `varlist' `if' `in' `wt', `options'
  }
  else{
-     bysum2 `varlist' `if' `in' `wt', `options'
+     sumup2 `varlist' `if' `in' `wt', `options'
  }
 end
 
-program define bysum2, sortpreserve
+program define sumup2, sortpreserve
     version 12.1
-    innerbysum `0'
+    innersumup `0'
 end
 
-program define bysum2collapse
+program define sumup2collapse
     version 12.1
-    innerbysum `0'
+    innersumup `0'
 end
 
 
 /***************************************************************************************************
 
 ***************************************************************************************************/
-program define innerbysum, rclass
+program define innersumup, rclass
     version 12.1
     syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
     save(str) replace collapse ///
@@ -174,7 +174,7 @@ program define innerbysum, rclass
             local maxlength`ib' 0
             local lab`ib' `: value label `b`ib'''
             local istime`ib' = 0
-            if "lab`ib'" == "" {
+            if "`lab`ib''" == "" {
                 if `isstring`ib'' == 0 {
                     local istime`ib' = regexm("`for`ib''", "%d|%t")
                 }
