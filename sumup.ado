@@ -1,45 +1,17 @@
 /***************************************************************************************************
-The code for sumup is basically a fork of tabstat.
+The code for sumup is heavily inspired by tabstat.
 ***************************************************************************************************/
 
-program define sumup
-    version 12.1
-    syntax [varlist(default=none)] [if] [in] [aweight fweight], [collapse *]
-
-    if ("`weight'"!="") local wt [`weight'`exp']
-
-    if "`collapse'" ~= ""{
-     sumup2collapse `varlist' `if' `in' `wt', `options'
- }
- else{
-     sumup2 `varlist' `if' `in' `wt', `options'
- }
-end
-
-program define sumup2, sortpreserve
-    version 12.1
-    innersumup `0'
-end
-
-program define sumup2collapse
-    version 12.1
-    innersumup `0'
-end
-
-
-/***************************************************************************************************
-
-***************************************************************************************************/
-program define innersumup, rclass
+program define sumup, sortpreserve rclass
     version 12.1
     syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
-    save(str) replace collapse ///
-    Detail Statistics(str) STATS(str)  ///
+    save(str) replace ///
+    Detail Statistics(str) ///
     Missing noTotal ///
     seps(numlist) ///
     CASEwise Format Format2(str) ///
     LAbelwidth(int -1) VArwidth(int -1) ///
-    SAME noSEParator  septable(string) ]
+    SAME noSEParator  septable(string)]
 
 
 
@@ -69,14 +41,6 @@ program define innersumup, rclass
         local same same
     }
 
-    if `"`stats'"' != "" {
-        if `"`statistics'"' != "" {
-            di as error  "may not specify both statistics() and stats() options"
-            exit 198
-        }
-        local statistics `"`stats'"'
-        local stats
-    }
 
     if "`total'" != "" & "`by'" == "" {
         di as txt "nothing to display"
@@ -141,18 +105,7 @@ program define innersumup, rclass
     }
 
 
-    * collapse
-
-    if "`collapse'" ~= ""{
-        cap assert "`save'" == ""
-        if _rc{
-            di as error "The command save cannot be used with the option collapse"
-        }
-        tempfile save
-        local replace replace
-    }
-
-
+    
 
 
 
@@ -163,20 +116,16 @@ program define innersumup, rclass
         tokenize `by'
         local maxlength 0
         forval ib = 1/`nby'{
-            local byfullname`ib' ``ib''
-    
-            local b`ib' ``ib'' 
-            local blabel`ib' `:value label `b`ib''' 
-        
-            local bytype`ib': type `b`ib''
-            local isstring`ib' = regexm("`bytype`ib''", "str")
-            local for`ib': format `b`ib''
-            local maxlength`ib' 0
-            local lab`ib' `: value label `b`ib'''
-            local istime`ib' = 0
-            if "`lab`ib''" == "" {
-                if `isstring`ib'' == 0 {
-                    local istime`ib' = regexm("`for`ib''", "%d|%t")
+            local by`ib' ``ib'' 
+            local byfullname`ib' `by`ib''
+            local byvaluelabel`ib' `: value label `by`ib'''
+            local bytype`ib': type `by`ib''
+            local byformat`ib': format `by`ib''
+            local bymaxlength`ib' 0
+            local byistime`ib' = 0
+            if "`byvaluelabel`ib''" == "" {
+                if regexm("`bytype`ib''", "str") == 0 {
+                    local byistime`ib' = regexm("`byformat`ib''", "%d|%t")
                 }
             }
         }
@@ -272,7 +221,7 @@ program define innersumup, rclass
         tempfile postfile
         tempname postname
         forval ib = 1/`nby' {
-            local postvars `postvars' `: type `b`ib''' `b`ib''
+            local postvars `postvars' `: type `by`ib''' `by`ib''
         }
 
         if `nvars' == 1{
@@ -347,7 +296,7 @@ program define innersumup, rclass
             else{
                 local bypost ""
                 forval ib = 1/`nby'{
-                    local bypost `bypost' (`b`ib''[`start'])
+                    local bypost `bypost' (`by`ib''[`start'])
                 }
 
                 local statpost ""
@@ -370,17 +319,8 @@ program define innersumup, rclass
     /* if save */
     if "`save'"~= ""{
         postclose `postname'
-        if "`collapse'" == ""{
-            tempfile save
-            local replace replace
-            copy `postfile' `save', `replace'
-            display "file `save' written"
-        }
-        else{
-            qui keep `by'
-            qui bys `by': keep if _n == 1
-            qui merge 1:1 `by' using `postfile', nogen keep(matched) sorted
-        }
+        copy `postfile' `save', `replace'
+        display "file `save' written"
     }
     else{
 
@@ -394,13 +334,13 @@ program define innersumup, rclass
                 forval ib = 1/`nby'{
                     * cap because string matrix does not exist
                     forval ib = 1/`nby'{
-                        if "`blabel`ib''" ~= ""{
-                            local lab`ib'`ig' `"`: label `blabel`ib'' `=`b`ib''[`start']''"'
+                        if "`byvaluelabel`ib''" ~= ""{
+                            local byvaluelabel`ib'`ig' `"`: label `byvaluelabel`ib'' `=`by`ib''[`start']''"'
                         }
                         else{
-                            local lab`ib'`ig' `"`=`b`ib''[`start']'"'
+                            local byvaluelabel`ib'`ig' `"`=`by`ib''[`start']'"'
                         }
-                        local maxlength`ib' = max(strlen(`"`lab`ib'`ig''"'),`maxlength`ib'')
+                        local bymaxlength`ib' = max(strlen(`"`byvaluelabel`ib'`ig''"'),`bymaxlength`ib'')
                     }
                 }
                 local start = `end' + 1
@@ -444,7 +384,7 @@ program define innersumup, rclass
 
             local ngt = `ng' + 1
             forval ib = 1/`nby'{
-                local lab`ib'`ngt' "Total"
+                local byvaluelabel`ib'`ngt' "Total"
             }
             tempvar Stat`ngt'
             mat `Stat`ngt'' = `Stat'
@@ -455,46 +395,39 @@ program define innersumup, rclass
         }
 
 
-
-
         * constants for displaying results
         * --------------------------------
         local byw = 0
         if `nby' {
             forval ib = 1/`nby'{
                 if substr("`bytype`ib''",1,3) != "str" {
-                    local byw`ib' = min(floor((`labelwidth'+1)/`nby')-1,`maxlength`ib'')
+                    local byw`ib' = min(floor((`labelwidth'+1)/`nby')-1,`bymaxlength`ib'')
                 }
                 else {
                     local byw`ib'=min(real(substr("`bytype`ib''",4,.)),floor((`labelwidth'+1)/`nby')-1)
                     local bytype`ib' str
                 }
-
-                capture local if_date_for`ib' = substr("`for`ib''", index("`for`ib''", "%"), index("`for`ib''", "d"))
-                capture local if_time_for`ib' = substr("`for`ib''", index("`for`ib''", "%"), index("`for`ib''", "t"))
-                if "`if_date_for`ib''" == "%d" | "`if_time_for`ib''" == "%t" {
-                    if "`if_date_for`ib''" == "%d" {
-                        local has_M = index("`for`ib''", "M")
-                        local has_L = index("`for`ib''", "L")
+                if regexm("`byformat`ib''", "\%d") {
+                        local has_M = index("`byformat`ib''", "M")
+                        local has_L = index("`byformat`ib''", "L")
                         if `has_M' > 0 | `has_L' > 0 {
                             local byw`ib' = 18
                         }
                         else {
                             local byw`ib' = 11
                         }
-                    }
-                    else {
-                        local byw`ib' = 9
-                    }
+                }
+                else if regexm("`byformat`ib''", "\%t"){
+                    local byw`ib' = 9
                 }
                 else {
-                    local byw`ib' = max(length("`b`ib''"), `byw`ib'')
+                    local byw`ib' = max(length("`by`ib''"), `byw`ib'')
                 }
                 if "`total'" == "" {
                     local byw`ib' = max(`byw`ib'', 6)
                 }
                 local byw = `byw' + `byw`ib'' + 1
-                local byname`ib' = abbrev("`byfullname`ib''",`byw`ib'')
+                local byshortname`ib' = abbrev("`byfullname`ib''",`byw`ib'')
             }
         }
         * number of chars in display format
@@ -553,7 +486,7 @@ program define innersumup, rclass
             * display header
             if `nby'{
                 forval ib = 1/`nby'{
-                    di as txt %~`byw`ib''s "`byname`ib''" _c
+                    di as txt %~`byw`ib''s "`byshortname`ib''" _c
                     di as text " " _c 
                 }
             }
@@ -577,11 +510,9 @@ program define innersumup, rclass
                 if `nby' {
                     if `ig' <= `ng'{
                         forval ib = 1/`nby'{
-                            local lab = substr(`"`lab`ib'`ig''"', 1,`byw`ib'')
-                            local val_lab : value label `b`ib''
-                            if `istime`ib''{
-                                local date_for`ib' : display `for`ib'' `lab'
-                                di as txt %~`byw`ib''s  `"`date_for`ib''"' _c
+                            local lab = substr(`"`byvaluelabel`ib'`ig''"', 1,`byw`ib'')
+                            if `byistime`ib''{
+                                di as txt %~`byw`ib''s  `"`: display `byformat`ib'' `lab'''"' _c
 
                             }
                             else {

@@ -1,15 +1,16 @@
 v 3
 
-d bysum. print summary statistics by group
+d sumup. print summary statistics by group
 d
 d Author: Matthieu Gomez
 d
 d
-d KW: fastabstat tabstat
+d KW: sumup fastabstat tabstat collapse
 d
-d Requires: Stata version 11.2
+d Requires: Stata version 12.1
 d
-d Distribution-Date: 20150330
+d Distribution-Date: 20151231
 d
 f sumup.ado
+f sumup.sthlp
 f fasttabstat.ado

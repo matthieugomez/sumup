@@ -80,15 +80,7 @@ Instead of returning a set of scalars, sumup returns matrices.
 
 ### `sumup` can `collapse` to an external dataset
 
-Replace the existing dataset by the summary statistics using the `collapse` option
-```
-sumup hours wage, by(union married) statistics(mean p50 p90) collapse
-```
-![](img/sumcollapse.jpg)
-
-
-
-To avoid erasing the original dataset, save the summary statistics  dataset through the `save` option:
+Save the summary statistics  dataset through the `save` option:
 
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
