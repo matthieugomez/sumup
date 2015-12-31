@@ -96,19 +96,21 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 
 
 # Installation
+`sumup` is now available on SSC. 
+
 ```
-net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/)
+ssc install sumup
 ```
 
-If you have a version of Stata < 13, you need to install it manually
-
-1. Click the "Download ZIP" button in the right column to download a zipfile. 
-2. Extract it into a folder (e.g. ~/SOMEFOLDER)
-3. Run
-
+To install the latest version  on Github 
+- with Stata13+
 	```
-	cap ado uninstall sumup
-	net install sumup, from("~/SOMEFOLDER")
+	net install sumup, from(https://github.com/matthieugomez/stata-sumup/raw/master/)
+	```
+
+- with Stata 12 or older, download the zipfiles of the repositories and run in Stata the following commands:
+	```
+	net install sumup, from("SomeFolder")
 	```
 
 # Reference
