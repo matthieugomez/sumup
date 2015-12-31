@@ -4,7 +4,8 @@ The code for sumup is heavily inspired by tabstat.
 
 program define sumup, sortpreserve rclass
     version 12.1
-    syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  by(varlist) ///
+    syntax [varlist(default=none)] [if] [in] [aweight fweight] [,  
+    by(varlist) ///
     save(str) replace ///
     Detail Statistics(str) ///
     Missing noTotal ///

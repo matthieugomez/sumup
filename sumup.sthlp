@@ -96,7 +96,7 @@
 {marker references}{...}
 {title:References}
 
-{cmd:sumup}, {cmd:table}, {cmd:tabstat}, {cmd:collapse} have similar functionalities, but {cmd:sumup} is ten times faster.
+{cmd:sumup}, {cmd:table}, {cmd:tabstat}, {cmd:collapse} have similar functionalities. {cmd:sumup} is ten times faster, and allows to define groups composed of multiple variables.
 Code for {cmd:sumup} borrows heavily from {cmd:tabstat}.
 
 
