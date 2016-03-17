@@ -72,11 +72,6 @@ q             | equivalent to specifying p25 p50 p75
 p??			|	any ??th percentile
 
 
-Instead of returning a set of scalars, sumup returns matrices.
-
-
-
-
 
 ### `sumup` can `collapse` to an external dataset
 
@@ -86,7 +81,7 @@ Save the summary statistics  dataset through the `save` option:
 sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
 ```
 ![](img/sumcollapse2.jpg)
-
+collapse
 
 
 

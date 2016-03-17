@@ -18,8 +18,6 @@ program define sumup, sortpreserve rclass
 
     if ("`weight'"!="") local wt [`weight'`exp']
 
-
-
     if "`varlist'" == ""{
         * tabulate function
         local varlist `: word 1 of `by''
@@ -197,22 +195,13 @@ program define sumup, sortpreserve rclass
 
 
     if "`separator'" == "" & ( (`nstats' > 1 & "`incol'" == "variables") /*
-        */         |(`nvars' > 1  & "`incol'" == "statistics")) {
+    */         |(`nvars' > 1  & "`incol'" == "statistics")) {
         local sepline yes
     }
 
 
 
-    if "`save'" ~= ""{
-        local matsize : set matsize
-        local matreq = max(`nstats',`nvars')
-        if `matsize' < `matreq' {
-            di as err /*
-            */ "set matsize to at least `matreq' (see help matsize for details)"
-            exit 908
-        }
-
-
+    if "`save'" != ""{
         cap confirm new file `"`save'"'
         if _rc ~= 0 & "`replace'" == ""{
             di as error  `"file `save' already exists. Specify option replace"'
@@ -242,15 +231,17 @@ program define sumup, sortpreserve rclass
 
 
     /* compute statistics  by group*/
-
+    local matsize : set matsize
+    local matreq = max(`nstats',`nvars')
+    if `matsize' < `matreq' {
+        di as err /*
+        */ "set matsize to at least `matreq' (see help matsize for details)"
+        exit 908
+    }
     tempname Stat
     mat `Stat' = J(`nstats',`nvars',0)
     mat colnames `Stat' = `varlist'
     mat rownames `Stat' = `stats'
-
-
-
-
 
     if `nby'{
         tempvar bylength
@@ -318,13 +309,12 @@ program define sumup, sortpreserve rclass
     }
 
     /* if save */
-    if "`save'"~= ""{
+    if "`save'" ~= ""{
         postclose `postname'
         copy `postfile' `save', `replace'
         display "file `save' written"
     }
     else{
-
         if `nby'{
             * only do it if no collapse. This also means only a few groups
             local start = `touse_first'
@@ -389,7 +379,6 @@ program define sumup, sortpreserve rclass
             }
             tempvar Stat`ngt'
             mat `Stat`ngt'' = `Stat'
-
         }
         else{
             local ngt = `ng'
@@ -409,14 +398,14 @@ program define sumup, sortpreserve rclass
                     local bytype`ib' str
                 }
                 if regexm("`byformat`ib''", "\%d") {
-                        local has_M = index("`byformat`ib''", "M")
-                        local has_L = index("`byformat`ib''", "L")
-                        if `has_M' > 0 | `has_L' > 0 {
-                            local byw`ib' = 18
-                        }
-                        else {
-                            local byw`ib' = 11
-                        }
+                    local has_M = index("`byformat`ib''", "M")
+                    local has_L = index("`byformat`ib''", "L")
+                    if `has_M' > 0 | `has_L' > 0 {
+                        local byw`ib' = 18
+                    }
+                    else {
+                        local byw`ib' = 11
+                    }
                 }
                 else if regexm("`byformat`ib''", "\%t"){
                     local byw`ib' = 9
