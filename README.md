@@ -27,6 +27,7 @@ sumup hours, by(union married)
 
 
 - Use the `statistics` option to return any percentile p??
+
 	```sumup hours, by(industry) statistics(p80)```
 
 
