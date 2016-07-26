@@ -38,10 +38,10 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 ```
 
 ![](img/sumcollapse2.jpg)
-collapse
 
 
-`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()
+
+`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`
 
 `sumup` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
 
