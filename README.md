@@ -30,7 +30,7 @@ sumup hours, by(union married)
 	```sumup hours, by(industry) statistics(p80)```
 
 
-- Save the results in a dataset, rather than locals.
+- Use the `save` option to write the results in an external dataset.
 
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
@@ -40,7 +40,8 @@ sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) repl
 collapse
 
 
-`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`.
+`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()
+
 `sumup` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
 
 
