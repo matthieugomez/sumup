@@ -26,15 +26,16 @@ sumup hours, by(union married)
 
 
 
-Use the `statistics` option to return any percentile p??
-```sumup hours, by(industry) statistics(p80)```
+- Use the `statistics` option to return any percentile p??
+	```sumup hours, by(industry) statistics(p80)```
 
 
-Save the results in a dataset, rather than locals.
+- Save the results in a dataset, rather than locals.
 
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
-``
+```
+
 ![](img/sumcollapse2.jpg)
 collapse
 
