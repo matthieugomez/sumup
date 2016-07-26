@@ -12,7 +12,6 @@ sumup hours, by(race)
 ```
 ![](img/sum.jpg)
 
-With the option `detail`, `sumup` returns detailed statistics:
 ```
 sumup hours, by(industry) detail
 ```
@@ -27,17 +26,15 @@ sumup hours, by(union married)
 
 
 
-
-
-Sumup can also returns any percentile p??
+Use the `statistics` option to return any percentile p??
 ```sumup hours, by(industry) statistics(p80)```
 
 
-Save the results in a dataset, rather than in locals.
+Save the results in a dataset, rather than locals.
 
 ```
 sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
-```
+``
 ![](img/sumcollapse2.jpg)
 collapse
 
