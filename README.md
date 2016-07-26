@@ -12,12 +12,15 @@ sumup hours, by(race)
 ```
 ![](img/sum.jpg)
 
+- Use the detailed option to return detailed statistics
+
 ```
 sumup hours, by(industry) detail
 ```
 ![](img/sumdetail.jpg)
 
 
+- Define groups with respect to multiple variables
 ```
 sumup hours, by(union married) 
 ```
