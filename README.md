@@ -1,10 +1,9 @@
 
 
 
-
 ### `sumup`  = `summarize` by group
 
-`sumup` returns the same set of statistics than `summarize`, but computes them by group
+`sumup` allows to `summarize` your data by group
 
 ```
 sysuse nlsw88.dta, clear
@@ -34,19 +33,8 @@ sumup hours, by(union married)
 	```sumup hours, by(industry) statistics(p80)```
 
 
-- Use the `save` option to write the results in an external dataset.
+`sumup` is ten times faster than `table, contents()` or `tabstat`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`. `sumup` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
 
-```
-sumup hours wage, by(union married) statistics(mean p50 p90) save(temp.dta) replace
-```
-
-![](img/sumcollapse2.jpg)
-
-
-
-`sumup` is ten times faster than `table, contents()`, `tabstat` or `collapse`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`
-
-`sumup` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
 
 
 # Installation
