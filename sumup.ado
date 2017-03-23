@@ -689,7 +689,7 @@ program define Stats2, rclass
 
         if "`st'" == "sd"{
             local names "`names' sd"
-            local titlenames `"`titlenames' "Std. Dev.""'
+            local titlenames `"`titlenames' StdDev"'
             local expr  "`expr' r(sd)"
             local class = max(`class',2)
             local cmd "`cmd' sum"
