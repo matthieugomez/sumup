@@ -153,7 +153,7 @@ program define fasttabstat, rclass byable(recall) sort
 	* compute the statistics
 	* ----------------------
 	/* start of modification (fasttabstat vs tabstat) */
-	count if `touse'
+	qui count if `touse'
 	local samplesize=r(N)
 	local touse_first=_N-`samplesize'+1
 	local touse_last=_N
