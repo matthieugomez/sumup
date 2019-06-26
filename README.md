@@ -46,7 +46,7 @@ ssc install sumup
 To install the latest version  on Github 
 - with Stata13+
 	```
-	net install sumup, from(https://github.com/matthieugomez/sumup.ado/raw/master/)
+	net install sumup, from("https://raw.githubusercontent.com/matthieugomez/sumup.ado/master/")
 	```
 
 - with Stata 12 or older, download the zipfiles of the repositories and run in Stata the following commands:
