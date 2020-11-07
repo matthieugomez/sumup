@@ -649,7 +649,7 @@ program define Stats2, rclass
             local cmd "`cmd' sum"
             continue
         }
-        if inlist("`st'", "n", "N"){
+        if inlist("`st'", "count", "n", "N"){
             local st N
             local titlename Obs
             local names "`names' `st'"
