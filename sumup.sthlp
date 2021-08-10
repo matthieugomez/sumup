@@ -49,6 +49,8 @@
 {synopt :{opt d:etail}} detailed statistics.{p_end}
 {synopt:{opt s:tatistics(statnames)}} specified list of statistics (see {help sumup##statnames:statnames}) {p_end}
 {synopt:{opt save(filename)}} save statistics as a collapsed dataset {p_end}
+{synopt:{opt format(string)}} format to display statistics (except the number of observations and of missings)
+
 {synopt:{opt replace}}  overwrite existing dataset{p_end}
 
 

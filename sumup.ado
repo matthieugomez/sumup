@@ -10,7 +10,7 @@ program define sumup, sortpreserve rclass
     Detail Statistics(str) ///
     Missing noTotal ///
     seps(numlist) ///
-    CASEwise Format Format2(str) ///
+    CASEwise Format(str) ///
     LAbelwidth(int -1) VArwidth(int -1) ///
     SAME noSEParator  septable(string)]
 
@@ -46,14 +46,11 @@ program define sumup, sortpreserve rclass
         exit 0
     }
 
-    if "`format'" != "" & `"`format2'"' != "" {
-        di as err "may not specify both format and format()"
-        exit 198
-    }
-    if `"`format2'"' != "" {
-        capt local tmp : display `format2' 1
+
+    if `"`format'"' != "" {
+        capt local tmp : display `format' 1
         if _rc {
-            di as err `"invalid %fmt in format(): `format2'"'
+            di as err `"invalid %fmt in format(): `format'"'
             exit 120
         }
     }
@@ -69,8 +66,8 @@ program define sumup, sortpreserve rclass
     local nvars : word count `varlist'
     forvalues iv = 1/`nvars' {
         local var`iv' ``iv''
-        if `"`format2'"' != "" {
-            local fmt`iv' `format2'
+        if `"`format'"' != "" {
+            local fmt`iv' `format'
         }
         else if inlist("`name`iv''", "N", "missing"){
             local fmt`iv' %9.0fc
