@@ -3,7 +3,7 @@
 
 ### `sumup`  = `summarize` by group
 
-`sumup` allows to `summarize` your data by group
+`sumup` allows to `summarize` your data by groups defined by one or more variable
 
 ```
 sysuse nlsw88.dta, clear
@@ -11,29 +11,23 @@ sumup hours, by(race)
 ```
 ![](img/sum.jpg)
 
-- Use the detailed option to return detailed statistics
-
-```
-sumup hours, by(industry) detail
-```
-![](img/sumdetail.jpg)
-
-
-- Define groups with respect to multiple variables
 ```
 sumup hours, by(union married) 
 ```
 ![](img/sumgroups.jpg)
 
-
+- Use the detailed option to return detailed statistics
+```
+sumup hours, by(industry) detail
+```
+![](img/sumdetail.jpg)
 
 - Use the `statistics` option to return a specific set of statistics (including any percentile)
 
 	```sumup hours, by(industry) statistics(p80)```
 
 
-`sumup` is ten times faster than `table, contents()` or `tabstat`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`. `sumup` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
-
+`sumup` is ten times faster than `table, contents()` or `tabstat`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`. `sumup` borrows heavily  from `tabstat`.  This repository also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
 
 
 # Installation
