@@ -32,8 +32,7 @@ sumup hours, by(union married)
 	```sumup hours, by(industry) statistics(p80)```
 
 
-`sumup` is ten times faster than `table, contents()` or `tabstat`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`. `sumup` borrows heavily  from `tabstat`.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`.
-
+`sumup` borrows heavily from  `tabstat`, but it is often an order of magnitude faster.  The package also includes the command `fasttabstat` which is a drop in faster version of `tabstat`. `sumup` is as fast, but more flexible, than `tabulate, summarize()`. 
 
 
 # Installation
