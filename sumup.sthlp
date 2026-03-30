@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 0.2 08jul2015}{...}
+{* *! version 0.3 29mar2026}{...}
 {vieweralsosee "tabstat" "help tabstat"}{...}
 {vieweralsosee "tabulate" "help tabulate"}{...}
 {vieweralsosee "table" "help table"}{...}

@@ -9,7 +9,7 @@ d KW: sumup fastabstat tabstat collapse
 d
 d Requires: Stata version 12.1
 d
-d Distribution-Date: 20151231
+d Distribution-Date: 20260329
 d
 f sumup.ado
 f sumup.sthlp
