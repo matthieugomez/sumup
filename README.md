@@ -14,7 +14,6 @@ sumup hours, by(union)
 > ----------------------------------------------------------------------------
 
 ```
-![](img/sum.jpg)
 - Use multiple group variables
 
 ```
