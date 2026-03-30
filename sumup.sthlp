@@ -36,7 +36,7 @@
 {marker weights}{...}
 {title:Weights}
 {pstd}
-{cmd:fweight}s, {cmd:aweight}s and {cmd:pweight}s are allowed; see {help weight}.
+{cmd:fweight}s and {cmd:aweight}s are allowed; see {help weight}.
 
 
 

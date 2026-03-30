@@ -23,7 +23,7 @@ program define sumup, sortpreserve rclass
     seps(numlist) ///
     CASEwise Format(str) ///
     LAbelwidth(int -1) VArwidth(int -1) ///
-    SAME noSEParator  septable(string)]
+    SAME noSEParator]
 
 
 
@@ -41,7 +41,8 @@ program define sumup, sortpreserve rclass
             local statistics  n missing  mean sd min max 
         }
         else{
-            local statistics n missing  mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p75 p90 p95 p99 max
+            * p50 repeated: ends block 2 and opens block 3, mirroring summarize, detail layout
+            local statistics n missing  mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
             local seps 6 12
             local columns statistics
         }
@@ -151,6 +152,9 @@ program define sumup, sortpreserve rclass
     /*  sample selection  */
 
     marksample touse, novarlist
+    if "`same'" != "" {
+        markout `touse' `varlist'
+    }
     if `nby' & "`missing'" == "" {
         markout `touse' `by' , strok
     }
@@ -336,16 +340,13 @@ program define sumup, sortpreserve rclass
                 local ++ig
                 local end = `start' + `=`bylength'[`start']' - 1
                 forval ib = 1/`nby'{
-                    * cap because string matrix does not exist
-                    forval ib = 1/`nby'{
-                        if "`byvaluelabel`ib''" ~= ""{
-                            local byvaluelabel`ib'`ig' `"`: label `byvaluelabel`ib'' `=`by`ib''[`start']''"'
-                        }
-                        else{
-                            local byvaluelabel`ib'`ig' `"`=`by`ib''[`start']'"'
-                        }
-                        local bymaxlength`ib' = max(strlen(`"`byvaluelabel`ib'`ig''"'),`bymaxlength`ib'')
+                    if "`byvaluelabel`ib''" ~= ""{
+                        local byvaluelabel`ib'`ig' `"`: label `byvaluelabel`ib'' `=`by`ib''[`start']''"'
                     }
+                    else{
+                        local byvaluelabel`ib'`ig' `"`=`by`ib''[`start']'"'
+                    }
+                    local bymaxlength`ib' = max(strlen(`"`byvaluelabel`ib'`ig''"'),`bymaxlength`ib'')
                 }
                 local start = `end' + 1
             }
@@ -365,10 +366,10 @@ program define sumup, sortpreserve rclass
                     forvalues is = 1/`nstats' {
                         if "`cmd`is''" == "sum"{
                             if "`name`is''"== "freq"{
-                                mat `Stat'[`is',`iv'] = _N
+                                mat `Stat'[`is',`iv'] = `samplesize'
                             }
                             else if  "`name`is''"== "missing"{
-                                mat `Stat'[`is',`iv'] = _N - `expr`is''
+                                mat `Stat'[`is',`iv'] = `samplesize' - `expr`is''
                             }
                             else{
                                 mat `Stat'[`is',`iv'] = `expr`is''
@@ -646,7 +647,7 @@ program define Stats2, rclass
             local st skewness
         }
         else if "`st'" == "k" {
-            local st skurtosis
+            local st kurtosis
         }
         else if "`st'" == "me" {
             local st mean
@@ -764,7 +765,7 @@ program define Stats2, rclass
             local titlenames `"`titlenames' p25 p50 p75"'
             local expr  "`expr' r(p25) r(p50) r(p75)"
             local class = max(`class',3)
-            local cmd "`cmd' `qcmd'"
+            local cmd "`cmd' sum sum sum"
             continue
         }   
         if regexm("`st'","^p[0-9]*$"){
