@@ -4,6 +4,8 @@
 
 ```stata
 sysuse nlsw88.dta, clear
+
+/* Summarize by group */
 sumup hours, by(union)
 
  union   |       Obs    Missing       Mean     StdDev        Min        Max
@@ -13,11 +15,8 @@ Nonunion |      1,416          1     37.262    10.2272          1         80
 ---------+------------------------------------------------------------------
  Total   |      1,877          1    37.6052    9.98027          1         80
 ----------------------------------------------------------------------------
-```
 
-- Use multiple group variables
-
-```stata
+/* Use multiple group variables */
 sumup hours, by(union married)
 
  union  married |       Obs    Missing       Mean     StdDev        Min        Max
@@ -29,11 +28,8 @@ Nonunio Married |        942          0    35.9894    10.8929          1        
 ----------------+------------------------------------------------------------------
  Total          |      1,877          1    37.6052    9.98027          1         80
 -----------------------------------------------------------------------------------
-```
 
-- Use the detailed option to return detailed statistics
-
-```stata
+/* Use the detailed option to return detailed statistics */
 sumup hours, by(union) detail
 
  union   |       Obs    Missing       Mean     StdDev   Skewness   Kurtosis
@@ -59,11 +55,8 @@ Nonunion |         40         40         48         50         60         80
 ---------+------------------------------------------------------------------
  Total   |         40         40         48         50         60         80
 ----------------------------------------------------------------------------
-```
 
-- Use the `statistics` option to return a specific set of statistics (including any percentile)
-
-```stata
+/* Use the statistics option to return a specific set of statistics (including any percentile) */
 sumup hours, by(union) statistics(p80)
 
  union   |       p80
@@ -73,11 +66,9 @@ Nonunion |         40
 ---------+-----------
  Total   |         40
 ---------------------
+
+/* Use the replace or save(...) options to save the output table as a dataset */
 ```
-
-- Use the `replace` or `save(...)` options to save the output table as a dataset
-
-
 
 `sumup` is ten times faster than other programs with similar functionalities (e.g. `table, contents()` or `tabstat`).
 
@@ -91,5 +82,5 @@ ssc install sumup
 
 To install the latest version from Github:
 ```stata
-net install sumup, from("https://raw.githubusercontent.com/matthieugomez/sumup/master/")
+net install sumup, from("https://raw.githubusercontent.com/matthieugomez/sumup/main/")
 ```
