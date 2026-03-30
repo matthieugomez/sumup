@@ -1,5 +1,16 @@
+*! version 0.3 29mar2026
 /***************************************************************************************************
 The code for sumup is heavily inspired by tabstat.
+
+v0.3:
+- Display N/missing/freq as comma-separated integers
+- Adapt column width to variable format width
+- Fix line overflow when colwidth > 10 (neblock calculation)
+- Fix duplicate p50 in detail mode
+- Fix off-by-one skipping last single-obs group
+- Fix tempvar -> tempname for total matrix
+- Remove dead format code referencing undefined locals
+- Document all options in help file
 ***************************************************************************************************/
 
 program define sumup, sortpreserve rclass
