@@ -30,7 +30,7 @@ program define sumup, sortpreserve rclass
             local statistics  n missing  mean sd min max 
         }
         else{
-            local statistics n missing  mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p50 p75 p90 p95 p99 max
+            local statistics n missing  mean sd skewness kurtosis  min p1 p5 p10 p25 p50 p75 p90 p95 p99 max
             local seps 6 12
             local columns statistics
         }
@@ -69,11 +69,16 @@ program define sumup, sortpreserve rclass
         if `"`format'"' != "" {
             local fmt`iv' `format'
         }
-        else if inlist("`name`iv''", "N", "missing"){
-            local fmt`iv' %9.0fc
-        }
         else{
             local fmt`iv' : format ``iv''
+        }
+    }
+
+    * compute max format width for column sizing
+    local maxfmtw 9
+    forvalues iv = 1/`nvars' {
+        if regexm("`fmt`iv''", "^%-?([0-9]+)") {
+            local maxfmtw = max(`maxfmtw', real(regexs(1)))
         }
     }
 
@@ -246,7 +251,7 @@ program define sumup, sortpreserve rclass
         bys `touse' `by' : gen `tlength' `bylength' = _N 
         local ig = 0
         local start = `touse_first'
-        while `start' < `touse_last'{
+        while `start' <= `touse_last'{
             local ++ig
             local end = `start' + `=`bylength'[`start']' - 1
 
@@ -316,7 +321,7 @@ program define sumup, sortpreserve rclass
             * only do it if no collapse. This also means only a few groups
             local start = `touse_first'
             local ig = 0
-            while `start' < `touse_last'{
+            while `start' <= `touse_last'{
                 local ++ig
                 local end = `start' + `=`bylength'[`start']' - 1
                 forval ib = 1/`nby'{
@@ -374,7 +379,7 @@ program define sumup, sortpreserve rclass
             forval ib = 1/`nby'{
                 local byvaluelabel`ib'`ngt' "Total"
             }
-            tempvar Stat`ngt'
+            tempname Stat`ngt'
             mat `Stat`ngt'' = `Stat'
         }
         else{
@@ -418,15 +423,14 @@ program define sumup, sortpreserve rclass
             }
         }
         * number of chars in display format
-        local ndigit  9
-        local colwidth = `ndigit'+2
+        local colwidth = `maxfmtw'+2
 
         local lleft = `byw' *("`by'"!="") + (`varwidth'+1)*("`descr'"!="")
 
         local cbar  = `lleft' + 1
         local lsize = c(linesize)
         * number of non-label elements in the row of a block
-        local neblock = int((`lsize' - `cbar')/10)
+        local neblock = int((`lsize' - `cbar')/`colwidth')
         if "`seps'" == ""{
             * number of blocks if stats horizontal
             local nsblock  = 1 + int((`nstats'-1)/`neblock')
@@ -531,7 +535,12 @@ program define sumup, sortpreserve rclass
                     }
                     di as txt  "{c |}" _c
                     forvalues is = `is1'/`is2' {
-                        local s : display `fmt`iv'' `Stat`ig''[`is',`iv'] 
+                        if inlist("`name`is''", "N", "missing", "freq") {
+                            local s : display %`maxfmtw'.0fc `Stat`ig''[`is',`iv']
+                        }
+                        else {
+                            local s : display `fmt`iv'' `Stat`ig''[`is',`iv']
+                        }
                         di as res %`colwidth's "`s'" _c
                     }
                     di

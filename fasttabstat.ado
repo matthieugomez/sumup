@@ -167,7 +167,7 @@ program define fasttabstat, rclass byable(recall) sort
 		local bytype : type `by'
 		local iby = 1
 		local by1 = `touse_first'
-		while `by1' < `touse_last'{
+		while `by1' <= `touse_last'{
 			local by2 = `by1' + `=`bylength'[`by1']' - 1
 	
 			tempname Stat`iby'

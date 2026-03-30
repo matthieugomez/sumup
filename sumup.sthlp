@@ -109,7 +109,7 @@ Code for {cmd:sumup} borrows heavily from {cmd:tabstat}.
 Matthieu Gomez
 
 {phang}
-Department of Economics, Princeton University
+Department of Economics, Columbia University
 
 {phang}
 Please report issues on Github

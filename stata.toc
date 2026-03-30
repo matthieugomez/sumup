@@ -1,5 +1,5 @@
 v 3
-d Matthieu Gomez, Princeton University (mattg@princeton.edu)
+d Matthieu Gomez, Columbia University
 p sumup SUMUP - summary statistics by groups
 
 * l word-to-show path-or-url [description]
