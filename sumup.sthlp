@@ -31,7 +31,7 @@
 {title:Description}
 
 {pstd}
-{cmd:sumup} returns the same set of statistics than {cmd:summarize}, computed by groups.
+{cmd:sumup} returns the same set of statistics as {cmd:summarize}, computed by groups.
 
 {marker weights}{...}
 {title:Weights}
@@ -46,12 +46,19 @@
 {synopthdr}
 {synoptline}
 {synopt :{opt by(byvars)}} variable(s) defining groups {p_end}
-{synopt :{opt d:etail}} detailed statistics.{p_end}
+{synopt :{opt d:etail}} detailed statistics{p_end}
 {synopt:{opt s:tatistics(statnames)}} specified list of statistics (see {help sumup##statnames:statnames}) {p_end}
 {synopt:{opt save(filename)}} save statistics as a collapsed dataset {p_end}
-{synopt:{opt format(string)}} format to display statistics (except the number of observations and of missings)
-
-{synopt:{opt replace}}  overwrite existing dataset{p_end}
+{synopt:{opt replace}} overwrite existing dataset{p_end}
+{synopt:{opt format(string)}} format to display statistics (observations and missings always display as integers){p_end}
+{synopt:{opt m:issing}} treat missing values of {opt by()} variables as a category{p_end}
+{synopt:{opt noT:otal}} suppress the Total row{p_end}
+{synopt:{opt c:asewise}} casewise deletion of observations (same as {opt same}){p_end}
+{synopt:{opt la:belwidth(#)}} width for by-variable labels; default 16, range 8-32{p_end}
+{synopt:{opt va:rwidth(#)}} width for variable names; default 12, range 8-16{p_end}
+{synopt:{opt noSEP:arator}} suppress separator lines between groups{p_end}
+{synopt:{opt seps(numlist)}} insert block separators after the specified statistic positions{p_end}
+{synoptline}
 
 
 {marker statnames}{...}
@@ -113,7 +120,7 @@ Department of Economics, Columbia University
 
 {phang}
 Please report issues on Github
-{browse "https://github.com/matthieugomez/stata-sumup":https://github.com/matthieugomez/stata-sumup}
+{browse "https://github.com/matthieugomez/sumup":https://github.com/matthieugomez/sumup}
 {p_end}
 
 
